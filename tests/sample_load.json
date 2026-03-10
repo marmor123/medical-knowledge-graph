@@ -1,0 +1,1 @@
+[{"source_file": "test.pdf", "page_number": 45, "text_content": "Patient presents with SOB and history of Diabetes.", "mentions": [{"text": "SOB", "role": "Symptom"}, {"text": "Diabetes", "role": "Diagnosis"}], "tables": [], "clinical_shorthand_detected": []}]

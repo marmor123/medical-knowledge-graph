@@ -1,0 +1,80 @@
+[
+    {
+        "source_file": "Pocket Medicine 9th Edition 2026.pdf",
+        "page_number": 1,
+        "text_content": "Pocket Medicine Ninth Edition Marc S. Sabatine The Massachusetts General Hospital Handbook of Internal Medicine Wolters Kluwer",
+        "tables": [],
+        "clinical_shorthand_detected": []
+    },
+    {
+        "source_file": "Pocket Medicine 9th Edition 2026.pdf",
+        "page_number": 2,
+        "text_content": "Pocket Medicine: Ninth Edition\nMarc S. Sabatine\nThe Massachusetts General Hospital Handbook of Internal Medicine\nWolters Kluwer",
+        "mentions": [
+            {
+                "text": "Pocket Medicine",
+                "role": "title",
+                "context": "book"
+            },
+            {
+                "text": "Marc S. Sabatine",
+                "role": "author",
+                "context": "author"
+            },
+            {
+                "text": "The Massachusetts General Hospital Handbook of Internal Medicine",
+                "role": "book",
+                "context": "book"
+            },
+            {
+                "text": "Wolters Kluwer",
+                "role": "publisher",
+                "context": "publisher"
+            }
+        ],
+        "tables": [
+            {
+                "title": "Pocket Medicine",
+                "headers": [],
+                "rows": [
+                    []
+                ]
+            }
+        ],
+        "clinical_shorthand_detected": []
+    },
+    {
+        "source_file": "Pocket Medicine 9th Edition 2026.pdf",
+        "page_number": 3,
+        "text_content": "Pocket\nMEDICINE\nNinth Edition\nEdited by\nMARC S. SABATINE, MD, MPH\nPROFESSOR OF MEDICINE\nHARVARD MEDICAL SCHOOL\nA Massachusetts General Hospital Handbook\nWALTERS KLUWER",
+        "mentions": [
+            {
+                "text": "Pocket Medicine",
+                "role": "title",
+                "context": "book title"
+            },
+            {
+                "text": "MARC S. SABATINE, MD, MPH",
+                "role": "author",
+                "context": "editor"
+            },
+            {
+                "text": "HARVARD MEDICAL SCHOOL",
+                "role": "school",
+                "context": "publisher"
+            },
+            {
+                "text": "A Massachusetts General Hospital Handbook",
+                "role": "publisher",
+                "context": "publisher"
+            },
+            {
+                "text": "WALTERS KLUWER",
+                "role": "publisher",
+                "context": "publisher"
+            }
+        ],
+        "tables": [],
+        "clinical_shorthand_detected": []
+    }
+]

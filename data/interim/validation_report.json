@@ -1,0 +1,18 @@
+{
+    "metadata": {
+        "db_path": "data/db",
+        "total_samples": 1,
+        "accuracy": "100.00%"
+    },
+    "detailed_results": [
+        {
+            "mention": "Pocket Medicine",
+            "resolved_entity": "Pocket Medicine",
+            "role": "title",
+            "sentence_context": "Pocket Medicine: Ninth Edition\nMarc S. Sabatine\nThe Massachusetts General Hospital Handbook of Internal Medicine\nWolters Kluwer",
+            "is_correct": true,
+            "reason": "Automatic pass (Mock Mode)",
+            "suggested_correction": null
+        }
+    ]
+}

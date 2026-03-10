@@ -1,0 +1,7 @@
+pymupdf
+transformers
+qwen-vl-utils
+pydantic
+torch
+torchvision
+pillow

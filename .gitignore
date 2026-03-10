@@ -1,0 +1,18 @@
+# Binaries and Data
+*.pdf
+data/db/
+data/interim/images/
+tests/test_db/
+tests/temp_images/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
