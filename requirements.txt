@@ -5,3 +5,5 @@ pydantic
 torch
 torchvision
 pillow
+accelerate
+json-repair

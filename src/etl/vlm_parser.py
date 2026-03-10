@@ -7,6 +7,12 @@ from PIL import Image
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
 
+# Try to import json_repair for more robust parsing
+try:
+    from json_repair import repair_json
+except ImportError:
+    repair_json = lambda x: x # Fallback to identity
+
 # Define our strict output schema
 class TableStructure(BaseModel):
     title: Optional[str] = None
@@ -73,7 +79,7 @@ class VLMParser:
                     {
                         "type": "image", 
                         "image": f"file://{os.path.abspath(image_path)}",
-                        "max_pixels": 256 * 256,
+                        "max_pixels": 512 * 512, # Increased for better accuracy
                     },
                     {"type": "text", "text": prompt},
                 ],
@@ -102,19 +108,24 @@ class VLMParser:
                 generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
             )[0]
             
+            # Robust JSON extraction and repair
             json_str = output_text
             if "```json" in output_text:
                 json_str = output_text.split("```json")[1].split("```")[0]
             elif "```" in output_text:
                 json_str = output_text.split("```")[1].split("```")[0]
             
-            data = json.loads(json_str)
+            repaired_json = repair_json(json_str)
+            data = json.loads(repaired_json)
+            
+            # Ensure mandatory fields are present
             data["source_file"] = source_file
             data["page_number"] = page_number
             
             return MedicalPageChunk(**data)
         except Exception as e:
             print(f"Error parsing page {page_number}: {e}")
+            print(f"Raw output snippet: {output_text[:200] if 'output_text' in locals() else 'None'}...")
             return None
 
 if __name__ == "__main__":
