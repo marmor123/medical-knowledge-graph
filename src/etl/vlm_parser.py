@@ -1,6 +1,7 @@
 import os
 import json
 import torch
+import re
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from PIL import Image
@@ -9,9 +10,9 @@ from qwen_vl_utils import process_vision_info
 
 # Try to import json_repair for more robust parsing
 try:
-    from json_repair import repair_json
+    import json_repair
 except ImportError:
-    repair_json = lambda x: x # Fallback to identity
+    json_repair = None
 
 # Define our strict output schema
 class TableStructure(BaseModel):
@@ -58,11 +59,7 @@ class VLMParser:
             "You are a medical informatics expert. Analyze this medical textbook page image. "
             "1. Extract all text preserving reading order. "
             "2. Identify all medical concepts and categorize them as 'mentions' with a role: "
-            "   - 'Symptom': Physical findings or patient complaints. "
-            "   - 'Diagnosis': Diseases or clinical conditions. "
-            "   - 'LabValue': Laboratory tests or findings. "
-            "   - 'RiskFactor': Elements increasing disease probability. "
-            "   - 'Treatment': Medications, procedures, or interventions. "
+            "   - 'Symptom', 'Diagnosis', 'LabValue', 'RiskFactor', 'Treatment'. "
             "3. Identify clinical shorthand (e.g., 'SOB', 'CAD') and map them to their full expansion. "
             "4. Reconstruct all tables into structured format. "
             "Output strictly in valid JSON format matching this schema: "
@@ -79,7 +76,7 @@ class VLMParser:
                     {
                         "type": "image", 
                         "image": f"file://{os.path.abspath(image_path)}",
-                        "max_pixels": 512 * 512, # Increased for better accuracy
+                        "max_pixels": 512 * 512,
                     },
                     {"type": "text", "text": prompt},
                 ],
@@ -109,23 +106,32 @@ class VLMParser:
             )[0]
             
             # Robust JSON extraction and repair
-            json_str = output_text
-            if "```json" in output_text:
-                json_str = output_text.split("```json")[1].split("```")[0]
-            elif "```" in output_text:
-                json_str = output_text.split("```")[1].split("```")[0]
+            data = None
+            if json_repair:
+                # Use json_repair to handle malformed strings or truncation
+                try:
+                    data = json_repair.loads(output_text)
+                except:
+                    pass
             
-            repaired_json = repair_json(json_str)
-            data = json.loads(repaired_json)
+            if not data:
+                # Fallback to manual extraction if json_repair fails or is missing
+                json_match = re.search(r'(\{.*\})', output_text, re.DOTALL)
+                if json_match:
+                    json_str = json_match.group(1)
+                    data = json.loads(json_str)
+                else:
+                    data = json.loads(output_text) # Last ditch effort
             
             # Ensure mandatory fields are present
             data["source_file"] = source_file
             data["page_number"] = page_number
             
+            # Validate with Pydantic
             return MedicalPageChunk(**data)
         except Exception as e:
             print(f"Error parsing page {page_number}: {e}")
-            print(f"Raw output snippet: {output_text[:200] if 'output_text' in locals() else 'None'}...")
+            print(f"Raw output snippet: {output_text[:500] if 'output_text' in locals() else 'None'}...")
             return None
 
 if __name__ == "__main__":
