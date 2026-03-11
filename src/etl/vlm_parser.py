@@ -5,7 +5,13 @@ import re
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field, model_validator
 from PIL import Image
-from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
+try:
+    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
+except ImportError:
+    # Fallback for older transformers versions where AutoModelForVision2Seq might be missing
+    from transformers import AutoModel as AutoModelForVision2Seq
+    from transformers import AutoProcessor, BitsAndBytesConfig
+
 from qwen_vl_utils import process_vision_info
 
 # Try to import json_repair for more robust parsing
@@ -68,7 +74,7 @@ class VLMParser:
                 bnb_4bit_quant_type="nf4",
             )
 
-        # Using AutoModelForVision2Seq to automatically select the correct class
+        # Using AutoModelForVision2Seq (or fallback)
         self.model = AutoModelForVision2Seq.from_pretrained(
             model_name, 
             **load_kwargs
@@ -107,7 +113,7 @@ class VLMParser:
             "   - EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
             "2. 'clinical_shorthand_detected': List pairs of {'shorthand': '...', 'full_term': '...'}.\n"
             "3. 'tables': Reconstruct any tables found.\n"
-            "4. 'text_content': Extract the full text of the page.\n"
+            "4. 'text_content': Extract the full text of the page last.\n"
             "5. If a field has no data, return an empty list [].\n\n"
             "OUTPUT FORMAT:\n"
             "{\n"
@@ -138,6 +144,7 @@ class VLMParser:
 
         try:
             with torch.no_grad():
+                # Qwen3-8B can generate longer, more detailed responses
                 generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
             
             generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
