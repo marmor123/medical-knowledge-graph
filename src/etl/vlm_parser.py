@@ -93,6 +93,9 @@ class VLMParser:
         """
         print(f"--- Processing Page {page_number} (Mode: {mode}) ---")
         
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image not found at: {image_path}")
+        
         if mode == "abbrev":
             prompt = (
                 "You are a medical lexicographer. This image is a page from a medical abbreviation dictionary.\n"
@@ -133,32 +136,27 @@ class VLMParser:
         image_inputs, video_inputs = process_vision_info(messages)
         inputs = self.processor(text=[text], images=image_inputs, videos=video_inputs, padding=True, return_tensors="pt").to(self.device)
 
-        try:
-            with torch.no_grad():
-                generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
-            
-            generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
-            output_text = self.processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-            
-            # Use json_repair or regex fallback
-            data = None
-            if json_repair:
-                try: data = json_repair.loads(output_text)
-                except: pass
-            
-            if not data:
-                json_match = re.search(r'(\{.*\})', output_text, re.DOTALL)
-                if json_match:
-                    data = json.loads(json_match.group(1))
-                else:
-                    # Logic from _manual_repair could be called here
-                    data = json.loads(output_text)
-            
-            data["source_file"] = source_file
-            data["page_number"] = page_number
-            if "text_content" not in data: data["text_content"] = "Extraction incomplete"
-            
-            return MedicalPageChunk(**data)
-        except Exception as e:
-            print(f"CRITICAL ERROR parsing page {page_number}: {e}")
-            return None
+        with torch.no_grad():
+            generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+        
+        generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
+        output_text = self.processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+        
+        # Use json_repair or regex fallback
+        data = None
+        if json_repair:
+            try: data = json_repair.loads(output_text)
+            except: pass
+        
+        if not data:
+            json_match = re.search(r'(\{.*\})', output_text, re.DOTALL)
+            if json_match:
+                data = json.loads(json_match.group(1))
+            else:
+                data = json.loads(output_text)
+        
+        data["source_file"] = source_file
+        data["page_number"] = page_number
+        if "text_content" not in data: data["text_content"] = "Extraction incomplete"
+        
+        return MedicalPageChunk(**data)
