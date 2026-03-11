@@ -87,13 +87,19 @@ class VLMParser:
             print("Attempting to load with AutoModelForVision2Seq...")
             self.model = AutoModelForVision2Seq.from_pretrained(model_name, **load_kwargs)
         except Exception as e:
-            print(f"AutoModelForVision2Seq failed: {e}. Trying AutoModelForCausalLM...")
+            print(f"AutoModelForVision2Seq failed: {e}. Trying Qwen2_5_VLForConditionalGeneration...")
             try:
-                self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+                from transformers import Qwen2_5_VLForConditionalGeneration
+                self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_name, **load_kwargs)
             except Exception as e2:
-                print(f"AutoModelForCausalLM failed: {e2}. Falling back to basic AutoModel...")
-                from transformers import AutoModel
-                self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
+                print(f"Specific Qwen2_5 class load failed: {e2}. Trying AutoModelForCausalLM...")
+                try:
+                    from transformers import AutoModelForCausalLM
+                    self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+                except Exception as e3:
+                    print(f"AutoModelForCausalLM failed: {e3}. Falling back to basic AutoModel...")
+                    from transformers import AutoModel
+                    self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
 
         self.processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
         print(f"Model loaded successfully. Class: {self.model.__class__.__name__}")
