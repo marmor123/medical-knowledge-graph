@@ -1218,3 +1218,480 @@ Traceback (most recent call last):
 AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
 
 
+--- ERROR: 2026-03-11 15:08:14 ---
+CRITICAL failure on page 1: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 1}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 1}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
+--- ERROR: 2026-03-11 15:13:25 ---
+CRITICAL failure on page 2: 2 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'ECG P-wave criteria': '... >2.5 mm or V1 >1.5 mm'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 2 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'ECG P-wave criteria': '... >2.5 mm or V1 >1.5 mm'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+
+
+--- ERROR: 2026-03-11 15:16:09 ---
+CRITICAL failure on page 209: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 209}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 209}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
+--- ERROR: 2026-03-11 15:19:28 ---
+CRITICAL failure on page 210: 6 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 210}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'Stage': '0', 'Descripti...dian Survival': '>10 y'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.1
+  Input should be a valid list [type=list_type, input_value={'Stage': 'I', 'Descripti...n Survival': '7–10 y'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.2
+  Input should be a valid list [type=list_type, input_value={'Stage': 'II', 'Descript..., 'Median Survival': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.3
+  Input should be a valid list [type=list_type, input_value={'Stage': 'III', 'Descrip...an Survival': '1–2 y'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.4
+  Input should be a valid list [type=list_type, input_value={'Stage': 'IV', 'Descript..., 'Median Survival': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 6 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 210}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'Stage': '0', 'Descripti...dian Survival': '>10 y'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.1
+  Input should be a valid list [type=list_type, input_value={'Stage': 'I', 'Descripti...n Survival': '7–10 y'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.2
+  Input should be a valid list [type=list_type, input_value={'Stage': 'II', 'Descript..., 'Median Survival': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.3
+  Input should be a valid list [type=list_type, input_value={'Stage': 'III', 'Descrip...an Survival': '1–2 y'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.4
+  Input should be a valid list [type=list_type, input_value={'Stage': 'IV', 'Descript..., 'Median Survival': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+
+
+--- ERROR: 2026-03-11 15:19:38 ---
+CRITICAL failure on page 3: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 3}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 3}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
+--- ERROR: 2026-03-11 15:22:40 ---
+CRITICAL failure on page 211: 2 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'tables': [{'table_name'...df', 'page_number': 211}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'MGUS': '<10% BM plasma ...myeloma defining event'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 2 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'tables': [{'table_name'...df', 'page_number': 211}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'MGUS': '<10% BM plasma ...myeloma defining event'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+
+
+--- ERROR: 2026-03-11 15:23:12 ---
+CRITICAL failure on page 4: 8 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 4}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Angina/ACS'..., Qw. ± ↑ Troponin.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.1
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Pericarditi... ± s/s HF and ↓ EF.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.2
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Aortic diss...alse lumen on imaging.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.3
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'PE', 'Typic...or V/Q, ± ↑ Tn/BNP.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.4
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Pulm HTN', ...e, right S3 and/or S4.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.5
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Pneumonia',...ckles. CXR infiltrate.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.6
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Pleuritis',...leuritic friction rub.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 8 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 4}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Angina/ACS'..., Qw. ± ↑ Troponin.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.1
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Pericarditi... ± s/s HF and ↓ EF.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.2
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Aortic diss...alse lumen on imaging.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.3
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'PE', 'Typic...or V/Q, ± ↑ Tn/BNP.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.4
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Pulm HTN', ...e, right S3 and/or S4.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.5
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Pneumonia',...ckles. CXR infiltrate.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.6
+  Input should be a valid list [type=list_type, input_value={'Disorder': 'Pleuritis',...leuritic friction rub.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+
+
+--- ERROR: 2026-03-11 15:30:14 ---
+CRITICAL failure on page 5: 12 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'tables': [{'table_name'....pdf', 'page_number': 5}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'Condition': 'PTX', 'Cli...ic Clues': 'Dx w/ CXR.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.1
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Esoph refl...c Clues': 'See "GERD."'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.2
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Esoph spas...es': 'Dx w/ manometry.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.3
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Mallory-We...ic Clues': 'Dx w/ EGD.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.4
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Boerhaave'... 'Diagnostic Clues': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.5
+  Input should be a valid list [type=list_type, input_value={'Condition': 'PUD', 'Cli...GD, ± H. pylori test.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.6
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Biliary di...S, CT, MRCP; ↑ LFTs.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.7
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Pancreatit... lipase; abdominal CT.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.8
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Costochond... 'Diagnostic Clues': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.9
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Zoster', '... 'Diagnostic Clues': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.10
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Anxiety', ... 'Diagnostic Clues': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 12 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'tables': [{'table_name'....pdf', 'page_number': 5}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'Condition': 'PTX', 'Cli...ic Clues': 'Dx w/ CXR.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.1
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Esoph refl...c Clues': 'See "GERD."'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.2
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Esoph spas...es': 'Dx w/ manometry.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.3
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Mallory-We...ic Clues': 'Dx w/ EGD.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.4
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Boerhaave'... 'Diagnostic Clues': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.5
+  Input should be a valid list [type=list_type, input_value={'Condition': 'PUD', 'Cli...GD, ± H. pylori test.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.6
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Biliary di...S, CT, MRCP; ↑ LFTs.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.7
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Pancreatit... lipase; abdominal CT.'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.8
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Costochond... 'Diagnostic Clues': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.9
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Zoster', '... 'Diagnostic Clues': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.10
+  Input should be a valid list [type=list_type, input_value={'Condition': 'Anxiety', ... 'Diagnostic Clues': ''}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+
+
+--- ERROR: 2026-03-11 15:35:07 ---
+CRITICAL failure on page 212: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 212}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 212}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
+--- ERROR: 2026-03-11 15:39:35 ---
+CRITICAL failure on page 213: 3 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 213}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'Feature': 'Donor–reci...onor is also recipient'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.1
+  Input should be a valid list [type=list_type, input_value={'Feature': 'Graft-vs.-ho...utologous (Auto)': 'No'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 3 validation errors for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 213}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+tables.0.rows.0
+  Input should be a valid list [type=list_type, input_value={'Feature': 'Donor–reci...onor is also recipient'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+tables.0.rows.1
+  Input should be a valid list [type=list_type, input_value={'Feature': 'Graft-vs.-ho...utologous (Auto)': 'No'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/list_type
+
+
+--- ERROR: 2026-03-11 15:42:49 ---
+CRITICAL failure on page 6: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 6}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 6}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
+--- ERROR: 2026-03-11 15:43:23 ---
+CRITICAL failure on page 214: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'tables': [{'header': ['...df', 'page_number': 214}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'tables': [{'header': ['...df', 'page_number': 214}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
+--- ERROR: 2026-03-11 15:47:00 ---
+CRITICAL failure on page 7: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 7}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 7}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
+--- ERROR: 2026-03-11 15:50:23 ---
+CRITICAL failure on page 215: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 215}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'...df', 'page_number': 215}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
+--- ERROR: 2026-03-11 15:51:51 ---
+CRITICAL failure on page 8: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 8}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/src/etl/processor.py", line 93, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/src/etl/vlm_parser.py", line 134, in parse_page
+    return MedicalPageChunk(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MedicalPageChunk
+text_content
+  Field required [type=missing, input_value={'clinical_concepts': [{'....pdf', 'page_number': 8}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+
