@@ -6,12 +6,24 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field, model_validator
 from PIL import Image
 
+# Official Transformers classes for Qwen3-VL
 try:
-    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig, AutoModelForCausalLM
+    from transformers import (
+        Qwen3VLForConditionalGeneration, 
+        AutoProcessor, 
+        BitsAndBytesConfig
+    )
+    HAS_QWEN3 = True
 except ImportError:
-    from transformers import AutoModel as AutoModelForVision2Seq
-    from transformers import AutoProcessor, BitsAndBytesConfig
-    from transformers import AutoModelForCausalLM
+    HAS_QWEN3 = False
+    try:
+        from transformers import Qwen2_5_VLForConditionalGeneration as Qwen3VLForConditionalGeneration
+        from transformers import AutoProcessor, BitsAndBytesConfig
+        HAS_QWEN3 = True
+    except ImportError:
+        from transformers import AutoModelForVision2Seq as Qwen3VLForConditionalGeneration
+        from transformers import AutoProcessor, BitsAndBytesConfig
+        HAS_QWEN3 = False
 
 from qwen_vl_utils import process_vision_info
 
@@ -53,7 +65,7 @@ class VLMParser:
     def __init__(self, model_name: str = "Qwen/Qwen3-VL-8B-Instruct"):
         """
         Initializes the state-of-the-art Qwen3-VL 8B model.
-        Optimized for Kaggle T4 GPUs (using float16 instead of bfloat16).
+        Optimized for Kaggle T4 GPUs.
         """
         print(f"Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -82,30 +94,24 @@ class VLMParser:
             except ImportError:
                 print("❌ bitsandbytes not found.")
 
-        # Try multiple AutoModel classes to find one with .generate()
+        # Load the model using the most appropriate class
         try:
-            print("Attempting to load with AutoModelForVision2Seq...")
-            self.model = AutoModelForVision2Seq.from_pretrained(model_name, **load_kwargs)
+            print(f"Attempting load with class: {Qwen3VLForConditionalGeneration.__name__}")
+            self.model = Qwen3VLForConditionalGeneration.from_pretrained(
+                model_name, **load_kwargs
+            )
         except Exception as e:
-            print(f"AutoModelForVision2Seq failed: {e}. Trying Qwen2_5_VLForConditionalGeneration...")
-            try:
-                from transformers import Qwen2_5_VLForConditionalGeneration
-                self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_name, **load_kwargs)
-            except Exception as e2:
-                print(f"Specific Qwen2_5 class load failed: {e2}. Trying AutoModelForCausalLM...")
-                try:
-                    from transformers import AutoModelForCausalLM
-                    self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
-                except Exception as e3:
-                    print(f"AutoModelForCausalLM failed: {e3}. Falling back to basic AutoModel...")
-                    from transformers import AutoModel
-                    self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
+            print(f"Primary load failed: {e}. Falling back to AutoModelForVision2Seq...")
+            from transformers import AutoModelForVision2Seq
+            self.model = AutoModelForVision2Seq.from_pretrained(
+                model_name, **load_kwargs
+            )
 
         self.processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
         print(f"Model loaded successfully. Class: {self.model.__class__.__name__}")
         
         if not hasattr(self.model, "generate"):
-            print("❌ CRITICAL WARNING: Loaded model class STILL has no 'generate' method.")
+            print("❌ CRITICAL ERROR: Loaded model class has no 'generate' method.")
 
     def parse_page(self, image_path: str, page_number: int, source_file: str, mode: str = "standard") -> Optional[MedicalPageChunk]:
         """
@@ -134,7 +140,7 @@ class VLMParser:
                 "   - EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
                 "2. 'clinical_shorthand_detected': List pairs of {'shorthand': '...', 'full_term': '...'}.\n"
                 "3. 'tables': Reconstruct any tables found.\n"
-                "4. 'text_content': Extract the full text of the page.\n"
+                "4. 'text_content': Extract the full text of the page last.\n"
                 "OUTPUT FORMAT: {\"mentions\": [], \"clinical_shorthand_detected\": [], \"tables\": [], \"text_content\": \"...\"}"
             )
 
@@ -154,13 +160,24 @@ class VLMParser:
 
         text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         image_inputs, video_inputs = process_vision_info(messages)
-        inputs = self.processor(text=[text], images=image_inputs, videos=video_inputs, padding=True, return_tensors="pt").to(self.device)
+        inputs = self.processor(
+            text=[text], 
+            images=image_inputs, 
+            videos=video_inputs, 
+            padding=True, 
+            return_tensors="pt"
+        ).to(self.device)
 
+        # Inference
         with torch.no_grad():
             generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
         
-        generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
-        output_text = self.processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+        generated_ids_trimmed = [
+            out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+        ]
+        output_text = self.processor.batch_decode(
+            generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+        )[0]
         
         # Use json_repair or regex fallback
         data = None
