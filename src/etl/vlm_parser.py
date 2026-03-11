@@ -56,7 +56,7 @@ class MedicalPageChunk(BaseModel):
 class VLMParser:
     def __init__(self, model_name: str = "Qwen/Qwen3-VL-8B-Instruct", abbrev_path: str = "data/interim/abbreviations.json"):
         """
-        Initializes the VLM with extreme RAM efficiency for Kaggle.
+        Initializes the VLM with extreme RAM efficiency and explicit device mapping.
         """
         print(f"[{time.strftime('%H:%M:%S')}] Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -72,17 +72,17 @@ class VLMParser:
                     self.abbrev_context = "\n".join(sample_list)
             except: pass
 
-        print(f"[{time.strftime('%H:%M:%S')}] Loading weights (This may take 5-10 mins on Kaggle)...")
+        print(f"[{time.strftime('%H:%M:%S')}] Loading weights...")
         
         load_kwargs = {
             "torch_dtype": self.torch_dtype,
-            "device_map": "auto",
+            "device_map": {"": 0} if torch.cuda.is_available() else "cpu", # Force local GPU
             "trust_remote_code": True,
-            "low_cpu_mem_usage": True, # Prevents System RAM explosion
-            "offload_folder": "data/offload", # Fallback if RAM hits 100%
+            "low_cpu_mem_usage": True,
         }
         
         if torch.cuda.is_available():
+            print("🚀 Enabling NF4 Quantization...")
             try:
                 load_kwargs["quantization_config"] = BitsAndBytesConfig(
                     load_in_4bit=True,
@@ -94,7 +94,7 @@ class VLMParser:
 
         self.model = Qwen3VLForConditionalGeneration.from_pretrained(model_name, **load_kwargs)
         self.processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
-        print(f"[{time.strftime('%H:%M:%S')}] VLM Ready. Class: {self.model.__class__.__name__}")
+        print(f"[{time.strftime('%H:%M:%S')}] VLM Ready.")
 
     def parse_page(self, image_path: str, page_number: int, source_file: str, mode: str = "standard", quality: str = "high") -> Optional[MedicalPageChunk]:
         pixel_map = {"high": 1280, "medium": 768, "low": 512}
