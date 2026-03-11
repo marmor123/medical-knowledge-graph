@@ -48,9 +48,11 @@ class MedicalPageChunk(BaseModel):
     @classmethod
     def coerce_lists(cls, data: Any) -> Any:
         if isinstance(data, dict):
-            # 1. Handle aliasing (VLM sometimes says 'clinical_concepts')
+            # 1. Handle aliasing (VLM sometimes says 'clinical_concepts' or 'clinical_shorthand')
             if 'clinical_concepts' in data and 'mentions' not in data:
                 data['mentions'] = data.pop('clinical_concepts')
+            if 'clinical_shorthand' in data and 'clinical_shorthand_detected' not in data:
+                data['clinical_shorthand_detected'] = data.pop('clinical_shorthand')
             
             # 2. Handle single-item wrapping
             for field in ['mentions', 'tables', 'clinical_shorthand_detected']:
@@ -63,7 +65,6 @@ class MedicalPageChunk(BaseModel):
                     if 'rows' in table and isinstance(table['rows'], list):
                         for i, row in enumerate(table['rows']):
                             if isinstance(row, dict):
-                                # Coerce dict row to list of its values
                                 table['rows'][i] = list(row.values())
         return data
 
@@ -82,15 +83,16 @@ class VLMParser:
             try:
                 with open(abbrev_path, "r", encoding="utf-8") as f:
                     abbrevs = json.load(f)
-                    sample_list = [f"{k}: {v}" for k, v in list(abbrevs.items())[:100]]
+                    sample_list = [f"{k}: {v}" for k, v in list(abbrevs.items())[:150]]
                     self.abbrev_context = "\n".join(sample_list)
+                print(f"Loaded {len(abbrevs)} abbreviations for context.")
             except: pass
 
         print(f"[{time.strftime('%H:%M:%S')}] Loading weights...")
         
         load_kwargs = {
             "torch_dtype": self.torch_dtype,
-            "device_map": {"": 0} if torch.cuda.is_available() else "cpu", # Force local GPU
+            "device_map": {"": 0} if torch.cuda.is_available() else "cpu", 
             "trust_remote_code": True,
             "low_cpu_mem_usage": True,
         }
@@ -111,16 +113,39 @@ class VLMParser:
         print(f"[{time.strftime('%H:%M:%S')}] VLM Ready.")
 
     def parse_page(self, image_path: str, page_number: int, source_file: str, mode: str = "standard", quality: str = "high") -> Optional[MedicalPageChunk]:
+        """
+        Processes a single page image using Qwen3-8B visual reasoning.
+        """
+        print(f"--- Processing Page {page_number} (Mode: {mode}) ---")
+        
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Image not found at: {image_path}")
+        
         pixel_map = {"high": 1280, "medium": 768, "low": 512}
         px = pixel_map.get(quality, 1280)
 
         if mode == "abbrev":
-            prompt = "Extract medical abbreviations and their full expansions from this page. Output JSON."
-        else:
-            context_block = f"\nABBREVIATIONS:\n{self.abbrev_context}\n" if self.abbrev_context else ""
             prompt = (
-                "Extract clinical concepts (Symptom, Diagnosis, LabValue, RiskFactor, Treatment) "
-                f"and tables from this page. {context_block} Output JSON."
+                "You are a medical lexicographer. This image is a page from a medical abbreviation dictionary.\n"
+                "Extract every abbreviation and its full expansion.\n"
+                "Format strictly as JSON:\n"
+                "{\n"
+                "  \"clinical_shorthand_detected\": [{\"shorthand\": \"AAA\", \"full_term\": \"abdominal aortic aneurysm\"}],\n"
+                "  \"text_content\": \"[Full OCR of the page here]\"\n"
+                "}"
+            )
+        else:
+            context_block = f"\nCLINICAL CONTEXT (Common abbreviations in this book):\n{self.abbrev_context}\n" if self.abbrev_context else ""
+            prompt = (
+                "You are a medical informatics expert. Analyze this medical textbook page.\n"
+                "Extract all clinical data into a valid JSON object.\n"
+                f"{context_block}\n"
+                "CRITICAL CONSTRAINTS:\n"
+                "1. YOU MUST USE THESE EXACT KEYS: 'mentions', 'clinical_shorthand_detected', 'tables', 'text_content'.\n"
+                "2. 'mentions': List all medical concepts. EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
+                "3. 'text_content': YOU MUST EXTRACT THE FULL TEXT OF THE PAGE HERE. DO NOT SKIP THIS.\n"
+                "4. If a field has no data, return an empty list [].\n\n"
+                "OUTPUT FORMAT: {\"mentions\": [], \"clinical_shorthand_detected\": [], \"tables\": [], \"text_content\": \"...\"}"
             )
 
         messages = [{"role": "user", "content": [{"type": "image", "image": f"file://{os.path.abspath(image_path)}", "max_pixels": px * px}, {"type": "text", "text": prompt}]}]
@@ -134,6 +159,7 @@ class VLMParser:
         generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
         output_text = self.processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         
+        # Use json_repair or regex fallback
         data = None
         if json_repair:
             try: data = json_repair.loads(output_text)
@@ -145,6 +171,8 @@ class VLMParser:
         
         data["source_file"] = source_file
         data["page_number"] = page_number
+        if "text_content" not in data: data["text_content"] = "Extraction incomplete"
+        
         return MedicalPageChunk(**data)
 
 if __name__ == "__main__":
