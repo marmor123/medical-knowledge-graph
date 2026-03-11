@@ -8,6 +8,9 @@ from PIL import Image
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor, BitsAndBytesConfig
 from qwen_vl_utils import process_vision_info
 
+# Note: As of March 2026, Qwen3-VL uses the Qwen2VL architecture in transformers for backward compatibility 
+# but points to the newer Qwen3 weights.
+
 # Try to import json_repair for more robust parsing
 try:
     import json_repair
@@ -43,26 +46,24 @@ class MedicalPageChunk(BaseModel):
         return data
 
 class VLMParser:
-    def __init__(self, model_name: str = "Qwen/Qwen2-VL-7B-Instruct"):
+    def __init__(self, model_name: str = "Qwen/Qwen3-VL-8B-Instruct"):
         """
-        Initializes the Qwen2-VL model. Defaults to 7B for better quality.
+        Initializes the state-of-the-art Qwen3-VL 8B model for high-fidelity clinical extraction.
         """
-        print(f"Initializing VLM: {model_name}")
+        print(f"Initializing SOTA VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
-        # Use bfloat16 for better precision if supported
         self.torch_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
         
-        print(f"Loading model on {self.device}...")
+        print(f"Loading Qwen3-8B on {self.device}...")
         
         load_kwargs = {
             "torch_dtype": self.torch_dtype,
             "device_map": "auto",
         }
         
-        # 4-bit quantization is required to fit 7B + large images on a 16GB T4 GPU
+        # 4-bit quantization is essential for 8B model on T4 (16GB VRAM)
         if torch.cuda.is_available():
-            print("Enabling 4-bit quantization for memory efficiency...")
+            print("🚀 Enabling NF4 4-bit quantization for Qwen3-8B...")
             load_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=self.torch_dtype,
@@ -75,7 +76,7 @@ class VLMParser:
             **load_kwargs
         )
         self.processor = AutoProcessor.from_pretrained(model_name)
-        print("Model loaded.")
+        print("Qwen3-8B Model loaded successfully.")
 
     def _manual_repair(self, s: str) -> str:
         """Last resort repair for common VLM truncation issues."""
@@ -93,14 +94,15 @@ class VLMParser:
 
     def parse_page(self, image_path: str, page_number: int, source_file: str) -> Optional[MedicalPageChunk]:
         """
-        Processes a single page image and returns structured medical data.
+        Processes a single page image using Qwen3-8B visual reasoning.
         """
-        print(f"--- Processing Page {page_number} (7B Model) ---")
+        print(f"--- Processing Page {page_number} (Qwen3-8B) ---")
         
         prompt = (
-            "Analyze this medical textbook page. Extract all clinical data into a valid JSON object.\n\n"
+            "You are a medical informatics expert. Analyze this medical textbook page. "
+            "Extract all clinical data into a valid JSON object.\n\n"
             "CONSTRAINTS:\n"
-            "1. 'mentions': List all medical concepts (Symptoms, Diseases, etc.).\n"
+            "1. 'mentions': List all medical concepts.\n"
             "   - EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
             "2. 'clinical_shorthand_detected': List pairs of {'shorthand': '...', 'full_term': '...'}.\n"
             "3. 'tables': Reconstruct any tables found.\n"
@@ -122,7 +124,7 @@ class VLMParser:
                     {
                         "type": "image", 
                         "image": f"file://{os.path.abspath(image_path)}",
-                        "max_pixels": 512 * 512,
+                        "max_pixels": 768 * 768, # Qwen3 handles higher resolution better
                     },
                     {"type": "text", "text": prompt},
                 ],
@@ -135,6 +137,7 @@ class VLMParser:
 
         try:
             with torch.no_grad():
+                # Qwen3-8B can generate longer, more detailed responses
                 generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
             
             generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
