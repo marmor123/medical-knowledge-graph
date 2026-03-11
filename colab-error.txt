@@ -1,67 +1,41 @@
---- Processing Page 4 ---
-The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
-DEBUG: RAW VLM OUTPUT (Page 4):
-```json
-{
-  "source_file": "medical_textbook_page_image",
-  "page_number": 1,
-  "text_content": "T-wave inversion (TWI; ≥1 mm; \"deep\" if ≥5 mm; normal in III, V1, AVR) (Circ 2009;11:e241) • Ischemia/MI; Wellens' sign (deep, symm precordial TWI) -- critical prox LCA lesion; de Winter's sign (hypereactive TW z uppling STD V1-V4) -- acute prec LAD occlusion • Myopericarditis; CMP (Takotsubo, ARVC, apical HCM); MVP; PE (espec if TWI V1-V4) • Repolarization abbr in avL RVH/RV4 (\"strain pattern\"); BBBI; nI variant if QRS predom. • Postzystachardia or postspacing (\"memory\" T waves) • Electrolyte, digoxin, P2O5, P2CO2, pH/core temp Δs, intracellular bleed (\"cerebral TW\") Low voltage • QRS amplitude (R + S) <5 mm in all limb leads <10 mm in all precordial leads • Etol: COPD, pericardial/pleural effusion, myxedema, I BMI, infiltrative CMP, diffuse CAD Electrolyte abnormalities • T: tented TW, I: QT, PR: AVB, wide QRS, STE; I: Kt: flattened TW, U waves, I QT • I Ca: ; QT, flattened TW & Pw, J point elevation; I Ca: ; QT, TW Δs ECG in young athletes (JACC 2017;69:805) • Normal patterns may include LVH, RVH, early repolarization • Evaluate if arrhythmia, HR <30; QT, U waves, LBBB, Brugada pattern, QRS >140 ms, PR >400 ms, Mobitz II, 3' AVB, ST depression, TWI CHEST PAIN Disorder Typical Characteristics & Diagnostic Studies Cardiovascular Causes Angina/ACS <10% of chest pain in ED Subtotal \"pressure\" (= LR 1.3) -- neck, jaw, arm (= LR 1.3–1.5) Sharp, pleuritic, positional, or repro. w/pal palp all w = LR 0.35 Diaphoresis (= LR 1.4), dyspnea (= LR 1.2), alveo (= LR 1.5–1.8) = prior MI (= LR 2.2); w/ NTO/est (but not reliable); Annals EM 2005;49:956 ± ECG Δs: STE, STD, TWI, hyperacute TW, Qw. s = Toponoin. Pericarditis & myo- pericarditis Sharp pain -- taperiz., w/ respiration, w/ siting forward, ± Pericardial friction rub. ECG Δs (diffuse STE & PR, -- opposite in avR) ± pericardial effusion. If myopericarditis, same as above + I Trn and s/s HF and EF. Aortic dissection Sudden severe tearing pain (absence = LR 0.3). As asym (≥20 mmHg) BP or pulse (= LR 5.7), focal neuro deficit (= LR x6), A, widened medias. on CXR (absence = LR 0.3); false lumen on imaging. PE Sudden pleuritic pain. I RR & HR, I S2O5, ECG Δs (sinus tach, RAD, RBBB, S2Q3T6, TWI V1-V4, occ STE V1-V4), ± CTA or VQ, s = Trv/BNP. Pulm HTN Exertional pressure, DOE: I S2O5 load P2, RV heave, right S2 and/or S3. Pulmonary Causes Pneumonia Pleuritic, dyspnea, fever, cough, sputum. I RR, crackles, CXR infiltrate. Pleuritis Sharp, pleuritic pain. ± Pleuritic friction rub. ```
-DEBUG: END RAW OUTPUT
---- Processing Page 5 ---
-DEBUG: RAW VLM OUTPUT (Page 5):
-```json
-{
-  "source_file": "PTX",
-  "page_number": 1,
-  "text_content": "Sudden, sharp pleur pain. Hyperresonance, . breath sounds. Dx w/ CXR.",
-  "mentions": [{"text": "Sudden, sharp pleur pain.", "role": "mention", "context": "PTX"}],
-  "clinical_shorthand_detected": [{"shorthand": "Sudden, sharp pleur pain.", "full_term": "Sudden, sharp pleur pain."}]
-}
-```
-DEBUG: END RAW OUTPUT
---- Processing Page 6 ---
-DEBUG: RAW VLM OUTPUT (Page 6):
-```json
-{
-  "source_file": "Nonsurgical Evaluation of CAD",
-  "page_number": 41,
-  "text_content": "Indications: evaluate possible CAD sx or clinical symptoms in pts with known CAD, risk-stratify after chest pain, evaluate exercise tolerance, localize ischemia (imaging required) Contraindications: (Circ 2020;20:1803-1808;2020;12:2480) Absolute: atm w/48 h, high-risk UA, acute PE, severe sx AS, uncontrolled HF, uncontrolled arrhythmias, severe HTN (SBP >200), myocardial infarction, acute AOD Relative: discuss with stress lab; left main CAD, symptomatic valvular stenosis, HCM w/ LVOT obstruction, high-degree AVB, severe electrolyte abt Exercise tolerance test (w/ ECG alone) Generally preferred if PT can meaningfully exercise; ECG ds w/ Se ~65%, Sp ~80% Typically via treadmill w/ Bruce protocol (modified Bruce or submax if decon. or recent MI) Hold anti-isch. meds (eg. nitrate, 88) if dx/known CAD but give to assess adequacy of meds Pharmacologic stress test (nrb, requires imaging because ECG not interpretable) Use if nolow exercise tolerance, recent MI. Se ~Sp = exercise. Preferred if LBBB, WPW, or V- paced, because higher prob of false = imaging with exercise. Coronary vasodilator (regadenoxon [], side effects), dipyradole, adenosine: diffuse arteriole dilation -- relative perfusion defect in vessels w/ fixed epicardial dis. Reveals flow-limiting CAD w/ coronary vasodilatation which does not always correlate to ischemia w/ exercise. Side effects: flushing, HR, AVB, SBO, bronchospasm, i, seizure threshold Chronotropes/inosotropes (dobutab): more physiologic, but longer test; may precip arrhythmia Imaging for stress test Use if uninterpre. ECG (V-paced, LBBB, resting ST > 1 mm, digoxin, LVH, LVW), ECG test indeterminate, requires pharm test, or to localize ischemia (eg. prior coronary revasc) Radionuclide myocardial perfusion imaging w/ images obtained at rest & w/ stress SPECT (eg. 99mTc-secstambi): Se ~85%, Sp ~80% PET (ribudin-82): Se ~90%, Sp ~85%; requires pharmacologic stress, not exercise ECG-gated imaging allows assessment of regional LV fn (sign of ischemia/infarction) Echo (exercise or dobuta): Se ~80%, Sp ~85%; no radiation; operator dependent MII: Se ~85%, Sp ~90%; requires pharmacologic stress, not exercise Test results HR (must achieve >85% of max pred HR [220 – age] for exer. test to be dx): BP response, peak double product (HR × BP, nL/min) HR recovery (HRmax – HRmin) (f >12) Max exercise capacity achieved (METS or min): occurrence of symptoms ECG: ds: downsloping or horizontal ST (≥2 mm) 60–80 ms after QRS-proximate of CAD but does not localize ischemic territory); however, STE highly predictive & localizes Imaging: radionuclide defects or regional WMA on TTE: reversible defect = ischemia; fixed defect = infarct; transient isch dilatation -- ? severe 3VD. False = balanced (3VD) ischemia. Coronary flow reserve (PET) -- ? microvascular dystfn = epicardial CAD (EHJ 2020;41:3504). High-risk test results (PPV ~50% for LM or 3VD, ., consider coronary angio) ECG: ST ≥2 mm or ≥1 mm in stage 1 or in ≥25 leads or ≥5 min in recovery; ST 1; VT ```
-DEBUG: END RAW OUTPUT
---- Processing Page 7 ---
-DEBUG: RAW VLM OUTPUT (Page 7):
-```json
-{
-  "source_file": "medtextbookpageimage",
-  "page_number": 1,
-  "text_content": "Physiologic; i or fail to ; BP, <4 METS, angina during exercise ; EF. Radionuclide: ≥1 lg or ≤2 mod. reversible defects, transient LV cavity dilation, 1 lung uptake Myocardial viability (Circ Cardio Imaging 2020;13:e53). Goal: identify hibernating myocardium that could regain fn w revasc. Options: MRI (Se ~95%, Sp ~50%), FDG-PET (Se ~90%, Sp ~65%), dobutamine stress echo (Se ~80%, Sp ~80%), SPECT/rest-redistribution (Se ~85%, Sp ~65%). However, presence of viability has not been shown to predict clinical benefit of revasc. Coronary CT angiography (JACC 2021;15:192). Gated CT for contrast enhancement in coronary arteries, NTG given to dilate coronaries, β- blockers commonly used to lower HR. CAD-RADS score in stable CP improves risk strat. of CV events (JACC Med 2020;13:104). In stable out-PW w CP: CCTA added to ind of care ... 1 early but not overall angora or revasc; 1 use of preventive med Rx, and coronary death/inf by 10 y (JACC 2015;40:336). CCTA vs. final testing: no Δ in clinical outcomes overall, but CV death/MI in DM (JACC 2015;57:129). JACC 2019;78:809). In stable CP referred for angora, CCTA vs. invasive with no & in CV events (JACC 2022;38:1301). CT-FFR: estimates fnal signif of lesions Coronary artery calcium (CAC) score (C) Quantifies extent of calcium; thus, estimates plaque burden (but not % coronary stenosis) CAC sensitive (91%) but not specific (49%) for presence of CAD; high NPV to r/o CAD In intermediate-risk or selected borderline-risk adults (ie, 10-year ASCVD risk of S~20%), if decision about statin remains uncertain, reasonable to use CAC score to help guide Coronary angiography & PCI Precath checklist Peripheral arterial exam (radial, fem, DP, PT pulses; bruits); palmar arch eval (eg, w/ pulse oximetry & plethysmography) not routine. can lie flat * hrs, NPO >6 h, hold metformin and OC, hold SGLT2 (DKA), preRx w/ steroids + anesth if contrast allergy. CBC, PT (INR (ideally 2), Cr; hold ACE/ARB if renal dysfunction. Blood bank sample. i. risk of contrast-induced kidney injury; hold ACE/ARB/ARNI, NSAIIDs, diuretics. PreRx w/ isotonic IVF: data mixed but may be helpful if high risk (JACC 2017;38:1312). Vascular access Radial access preferred; i. mortality, bleeding, & vascular complications (Circ 2022;14:1329). Femoral artery commonly used; high puncture i. risk of retroperitoneal bleed; low puncture i. risk of arterial complic. (eg, AV fistula, superficial femoral artery cannulation) Periprocedural pharmacotherapy for PCI ASA 325 mg + 1. P2Y12 inhibitor: ticagrelor or prasugrel preferred over clopidr in ACS. Outside of STEMI, preRx not recommended when anatomy unknown and short time to PCI. Cangrelor (IV P2Y12 inhibit) i. pen-PCI events vs. clopid w/PreRx (JACC 2013;38:1301). GP IIIb/IIIa inhibitor: sometimes added if periprocedural thrombotic complication",
-  "clinical_shorthand_detected": {
-    "shorthand": "CCTA",
-    "full_term": "Coronary CT Angiography"
-  }
-}
-```
-DEBUG: END RAW OUTPUT
-CRITICAL ERROR parsing page 7: 1 validation error for MedicalPageChunk
-clinical_shorthand_detected
-  Input should be a valid list [type=list_type, input_value={'shorthand': 'CCTA', 'fu...oronary CT Angiography'}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/list_type
-Skipping page 7 due to error.
---- Processing Page 8 ---
-DEBUG: RAW VLM OUTPUT (Page 8):
-```json
-{
-  "source_file": "medical_textbook_page_image",
-  "page_number": 1,
-  "text_content": "Anticoagulant: UFH or bivalirudin typically given during case and stopped at end PCI and peri-PCI interventions Physiology: fractional flow reserve (FFR): ratio of max flow (induced by adenosine) distal vs. prox to stenosis to ID hemoglobin. signif. lesions (≤0.80). Instantaneous wave-free ratio (IFR) similar, doesn't require vasodilator; IFR threshold ≤0.89. Their use : # stents and MACE vs. angio alone (94.24 2009;30;212; 2017;379;183;1 & 184). Advanced imaging: intravascular US (IVUS) or optical coherence tomography (OCT) ; MACE (2014;40;244;3 & 2018;40;359) Drug-eluting stents (DES) : cardiac death, MI, repeat revasc, & stent thrombosis vs. BMS (Lancet 2019;393;2550). Balloon angioplasty alone reserved for lesions too narrow to stent. Peri-PCI complications No or slow reflow, coronary artery spasm: Rx with local delivery of vasodilators Coronary artery dissection: treat with stent Coronary perforation: immediate balloon tamponade, / for effusion, seal w/ covered stent Vascular access post-PCI complications Postprocedure / vascular access site, distal pulses, ECGL, CBC, Cr Bleeding: reverse/stotp anticoag (dv interventionalist); IV fluids/PRBC/plts as required hemostasis/over bleeding: manual compression retrorenal/retrohepatic bleed: may plw / Hct f flank or back pain. CT abd/pelvis (1) or angio if unstable. If does not auto-tamponade, intravascular balloon and/or covered stent. Vascular damage (~13% of dist. angio, ~5% of PCI; Curr 2007;115;268) pseudoaneurysm: triad of pain, expansile mass,ystolic bruit; diagnose w/ US; Rx (if pain or >2 cm): US-directed thrombin injection, surgery if former falls Av fistula: continuous bruit; Dx: US; Rx: surgical repair if large or sx limb ischemia (emboli, dissection, clot); cool, mottled extremity , distal pulses; Dx: loss of pulses , pulse volume recording, angio; Rx: percutaneous or surgical repair radial artery occlusion: if sx, consider 4 weeks LMWH Other complications (NEJM 2017;377;1513) Contrast-induced AKI: w/in 48 h, peak 3–5 d: pre-hydration reasonable (see "CIAK") Stroke: ~0.1–0.4% of cases. Usually ischemic from atherothrombotic event during cath. Rx depends on/syndication/timing but includes thrombectomy, IAP, DAPT if ischemic. Cholesterol emboli syndrome: typically in Pts w/ large burden Aa atheroma; mesenteric ischemia (abdom pain, LOI, pancreatitis); intact distal pulses but livedo and toe necrosis Stent post-PCI complications Stent thrombosis: acute clot formation in stent usually in 1st mo but can occur anytime. Typically plw AMI often due to premature dcl antitx Rx or mech prob. (stent underdespanse or unrecognized dissection, typically presents early). In-stent restenosis: develops in previously stented segment mos after PCI. Typically plw gradual / angina. Due to elastic recoil and neoatherial hyperplasia , w/ DES. Duration of dual antiplatelet therapy (Circ 2022;145;e18 & EHU 2018;39;213) Determined by presentation (ACS vs. CD) and ischemic (Pt & procedural) & bleeding risk DAPT (ASA B1 + P2Y12 inhibit) in CD ideal for c≥3–6 mo. In ACS (qry default is 1 yr; ASA dcl after 1–3 mos ; bleed w/o MACE. After full course of DAPT, clop monorox more efficacious & safer than ASA monorox (Lancet 2020;395;1152).",
-  "clinical_shorthand_detected": {
-    "shorthand": "PCI and peri-PCI interventions",
-    "full_term": "Anticoagulant, Physiology, Advanced imaging, Drug-eluting stents, Vascular access post-PCI complications, Other complications, Stent post-PCI complications, DAPT"
-  }
-}
-```
-DEBUG: END RAW OUTPUT
-CRITICAL ERROR parsing page 8: 1 validation error for MedicalPageChunk
-clinical_shorthand_detected
-  Input should be a valid list [type=list_type, input_value={'shorthand': 'PCI and pe...CI complications, DAPT'}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/list_type
-Skipping page 8 due to error.
+Initializing SOTA VLM: Qwen/Qwen3-VL-8B-Instruct
+Loading Qwen3-8B on cuda...
+🚀 Enabling NF4 4-bit quantization for Qwen3-8B...
+/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_auth.py:94: UserWarning: 
+The secret `HF_TOKEN` does not exist in your Colab secrets.
+To authenticate with the Hugging Face Hub, create a token in your settings tab (https://huggingface.co/settings/tokens), set it as secret in your Google Colab and restart your session.
+You will be able to reuse this secret in all of your notebooks.
+Please note that authentication is recommended but still optional to access public models or datasets.
+  warnings.warn(
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+WARNING:huggingface_hub.utils._http:Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+config.json: 
+ 1.47k/? [00:00<00:00, 125kB/s]
+You are using a model of type qwen3_vl to instantiate a model of type qwen2_vl. This is not supported for all configurations of models and can yield errors.
+Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_interleaved'}
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+/tmp/ipykernel_810/1921194445.py in <cell line: 0>()
+      3 
+      4 # 1. Load the model ONCE
+----> 5 shared_parser = VLMParser()
+      6 
+      7 # 2. Run ingestion (it will use the already-loaded model)
+
+3 frames
+/usr/local/lib/python3.12/dist-packages/transformers/quantizers/quantizer_bnb_4bit.py in validate_environment(self, *args, **kwargs)
+     58             )
+     59         if not is_bitsandbytes_available():
+---> 60             raise ImportError(
+     61                 f"Using `bitsandbytes` 4-bit quantization requires bitsandbytes: `pip install -U bitsandbytes>={BITSANDBYTES_MIN_VERSION}`"
+     62             )
+
+ImportError: Using `bitsandbytes` 4-bit quantization requires bitsandbytes: `pip install -U bitsandbytes>=0.46.1`
+
+---------------------------------------------------------------------------
+NOTE: If your import is failing due to a missing package, you can
+manually install dependencies using either !pip or !apt.
+
+To view examples of installing some common dependencies, click the
+"Open Examples" button below.
+------------------------------------------------------------------------

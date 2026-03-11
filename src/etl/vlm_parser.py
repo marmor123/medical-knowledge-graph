@@ -5,11 +5,8 @@ import re
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field, model_validator
 from PIL import Image
-from transformers import Qwen2VLForConditionalGeneration, AutoProcessor, BitsAndBytesConfig
+from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
 from qwen_vl_utils import process_vision_info
-
-# Note: As of March 2026, Qwen3-VL uses the Qwen2VL architecture in transformers for backward compatibility 
-# but points to the newer Qwen3 weights.
 
 # Try to import json_repair for more robust parsing
 try:
@@ -48,7 +45,7 @@ class MedicalPageChunk(BaseModel):
 class VLMParser:
     def __init__(self, model_name: str = "Qwen/Qwen3-VL-8B-Instruct"):
         """
-        Initializes the state-of-the-art Qwen3-VL 8B model for high-fidelity clinical extraction.
+        Initializes the state-of-the-art Qwen3-VL 8B model.
         """
         print(f"Initializing SOTA VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -71,7 +68,8 @@ class VLMParser:
                 bnb_4bit_quant_type="nf4",
             )
 
-        self.model = Qwen2VLForConditionalGeneration.from_pretrained(
+        # Using AutoModelForVision2Seq to automatically select the correct class
+        self.model = AutoModelForVision2Seq.from_pretrained(
             model_name, 
             **load_kwargs
         )
@@ -82,14 +80,17 @@ class VLMParser:
         """Last resort repair for common VLM truncation issues."""
         s = s.strip()
         if s.endswith(','): s = s[:-1]
+        
         open_braces = s.count('{')
         close_braces = s.count('}')
         if open_braces > close_braces:
             s += '}' * (open_braces - close_braces)
+            
         open_brackets = s.count('[')
         close_brackets = s.count(']')
         if open_brackets > close_brackets:
             s += ']' * (open_brackets - close_brackets)
+            
         return s
 
     def parse_page(self, image_path: str, page_number: int, source_file: str) -> Optional[MedicalPageChunk]:
@@ -124,7 +125,7 @@ class VLMParser:
                     {
                         "type": "image", 
                         "image": f"file://{os.path.abspath(image_path)}",
-                        "max_pixels": 768 * 768, # Qwen3 handles higher resolution better
+                        "max_pixels": 768 * 768, 
                     },
                     {"type": "text", "text": prompt},
                 ],
@@ -137,7 +138,6 @@ class VLMParser:
 
         try:
             with torch.no_grad():
-                # Qwen3-8B can generate longer, more detailed responses
                 generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
             
             generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
