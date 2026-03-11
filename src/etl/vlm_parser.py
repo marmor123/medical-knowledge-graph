@@ -54,14 +54,9 @@ class VLMParser:
         Initializes the state-of-the-art Qwen3-VL 8B model.
         Optimized for Kaggle T4 GPUs (using float16 instead of bfloat16).
         """
-        print(f"Initializing SOTA VLM: {model_name}")
+        print(f"Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
-        # T4 Optimization: Use float16 (T4 does not support bfloat16 natively)
-        # bfloat16 will run on T4 but it is extremely slow due to lack of hardware support.
         self.torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-        
-        print(f"Loading Qwen3-8B on {self.device} with {self.torch_dtype}...")
         
         load_kwargs = {
             "torch_dtype": self.torch_dtype,
@@ -70,7 +65,7 @@ class VLMParser:
         }
         
         if torch.cuda.is_available():
-            print("🚀 Enabling NF4 4-bit quantization for Qwen3-8B...")
+            print("🚀 Enabling NF4 4-bit quantization...")
             try:
                 import bitsandbytes
                 load_kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -80,56 +75,45 @@ class VLMParser:
                     bnb_4bit_quant_type="nf4",
                 )
             except ImportError:
-                print("❌ bitsandbytes not found. Quantization disabled.")
+                print("❌ bitsandbytes not found.")
 
         try:
             self.model = AutoModelForVision2Seq.from_pretrained(model_name, **load_kwargs)
-        except Exception as e:
-            print(f"Primary load failed: {e}. Falling back to basic AutoModel...")
+        except:
             from transformers import AutoModel
             self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
 
         self.processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
         print(f"Model loaded successfully. Class: {self.model.__class__.__name__}")
 
-    def _manual_repair(self, s: str) -> str:
-        """Last resort repair for common VLM truncation issues."""
-        s = s.strip()
-        if s.endswith(','): s = s[:-1]
-        open_braces = s.count('{')
-        close_braces = s.count('}')
-        if open_braces > close_braces:
-            s += '}' * (open_braces - close_braces)
-        open_brackets = s.count('[')
-        close_brackets = s.count(']')
-        if open_brackets > close_brackets:
-            s += ']' * (open_brackets - close_brackets)
-        return s
-
-    def parse_page(self, image_path: str, page_number: int, source_file: str) -> Optional[MedicalPageChunk]:
+    def parse_page(self, image_path: str, page_number: int, source_file: str, mode: str = "standard") -> Optional[MedicalPageChunk]:
         """
-        Processes a single page image using Qwen3-8B visual reasoning.
+        Processes a single page image.
+        Modes: 'standard' (full clinical extraction), 'abbrev' (dictionary mapping only).
         """
-        print(f"--- Processing Page {page_number} (Qwen3-8B) ---")
+        print(f"--- Processing Page {page_number} (Mode: {mode}) ---")
         
-        prompt = (
-            "You are a medical informatics expert. Analyze this medical textbook page. "
-            "Extract all clinical data into a valid JSON object.\n\n"
-            "CONSTRAINTS:\n"
-            "1. 'mentions': List all medical concepts.\n"
-            "   - EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
-            "2. 'clinical_shorthand_detected': List pairs of {'shorthand': '...', 'full_term': '...'}.\n"
-            "3. 'tables': Reconstruct any tables found.\n"
-            "4. 'text_content': Extract the full text of the page last.\n"
-            "5. If a field has no data, return an empty list [].\n\n"
-            "OUTPUT FORMAT:\n"
-            "{\n"
-            "  \"mentions\": [],\n"
-            "  \"clinical_shorthand_detected\": [],\n"
-            "  \"tables\": [],\n"
-            "  \"text_content\": \"...\"\n"
-            "}"
-        )
+        if mode == "abbrev":
+            prompt = (
+                "You are a medical lexicographer. This image is a page from a medical abbreviation dictionary.\n"
+                "Extract every abbreviation and its full expansion.\n"
+                "Format strictly as JSON:\n"
+                "{\n"
+                "  \"clinical_shorthand_detected\": [{\"shorthand\": \"AAA\", \"full_term\": \"abdominal aortic aneurysm\"}],\n"
+                "  \"text_content\": \"[Full OCR of the page here]\"\n"
+                "}"
+            )
+        else:
+            prompt = (
+                "Analyze this medical textbook page. Extract all clinical data into a valid JSON object.\n\n"
+                "CONSTRAINTS:\n"
+                "1. 'mentions': List all medical concepts.\n"
+                "   - EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
+                "2. 'clinical_shorthand_detected': List pairs of {'shorthand': '...', 'full_term': '...'}.\n"
+                "3. 'tables': Reconstruct any tables found.\n"
+                "4. 'text_content': Extract the full text of the page.\n"
+                "OUTPUT FORMAT: {\"mentions\": [], \"clinical_shorthand_detected\": [], \"tables\": [], \"text_content\": \"...\"}"
+            )
 
         messages = [
             {
@@ -138,7 +122,7 @@ class VLMParser:
                     {
                         "type": "image", 
                         "image": f"file://{os.path.abspath(image_path)}",
-                        "max_pixels": 1280 * 1280, # Increased for tiny 'Pocket Medicine' text
+                        "max_pixels": 1280 * 1280, 
                     },
                     {"type": "text", "text": prompt},
                 ],
@@ -156,41 +140,25 @@ class VLMParser:
             generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
             output_text = self.processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
             
-            print(f"DEBUG: RAW VLM OUTPUT (Page {page_number}):\n{output_text[:500]}...\nDEBUG: END RAW OUTPUT")
-
-            clean_text = output_text.strip()
-            if "```json" in clean_text:
-                clean_text = clean_text.split("```json")[1].split("```")[0].strip()
-            elif "```" in clean_text:
-                clean_text = clean_text.split("```")[1].split("```")[0].strip()
-
+            # Use json_repair or regex fallback
             data = None
             if json_repair:
-                try:
-                    data = json_repair.loads(clean_text)
-                except:
-                    pass
+                try: data = json_repair.loads(output_text)
+                except: pass
             
             if not data:
-                try:
-                    json_match = re.search(r'(\{.*\})', clean_text, re.DOTALL)
-                    if json_match:
-                        data = json.loads(json_match.group(1))
-                    else:
-                        data = json.loads(self._manual_repair(clean_text))
-                except Exception as e:
-                    print(f"Standard json.loads failed: {e}")
-                    raise e
+                json_match = re.search(r'(\{.*\})', output_text, re.DOTALL)
+                if json_match:
+                    data = json.loads(json_match.group(1))
+                else:
+                    # Logic from _manual_repair could be called here
+                    data = json.loads(output_text)
             
             data["source_file"] = source_file
             data["page_number"] = page_number
-            if "text_content" not in data:
-                data["text_content"] = "Extraction incomplete"
+            if "text_content" not in data: data["text_content"] = "Extraction incomplete"
             
             return MedicalPageChunk(**data)
         except Exception as e:
             print(f"CRITICAL ERROR parsing page {page_number}: {e}")
             return None
-
-if __name__ == "__main__":
-    pass

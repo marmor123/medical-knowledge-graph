@@ -25,12 +25,12 @@ def log_error(error_msg: str):
         f.write(error_msg + "\n")
         f.write(traceback.format_exc() + "\n\n")
 
-def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: int = None, mock: bool = False, parser: Optional[VLMParser] = None):
+def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: int = None, mock: bool = False, mode: str = "standard", parser: Optional[VLMParser] = None):
     """
     Main entry point for the medical PDF ingestion pipeline.
-    Allows targeting specific page ranges.
+    Allows targeting specific page ranges and processing modes.
     """
-    print(f"Starting ingestion for {pdf_path} from page {start_page}...")
+    print(f"Starting ingestion for {pdf_path} (Mode: {mode}) from page {start_page}...")
     
     # Setup directories
     image_folder = "data/interim/images"
@@ -43,12 +43,11 @@ def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: i
         return
         
     # Apply start and limit constraints
-    # Note: image_paths is 0-indexed, so page 1 is index 0
     start_index = max(0, start_page - 1)
     end_index = start_index + limit if limit else len(image_paths)
     image_paths_to_process = image_paths[start_index : end_index]
     
-    print(f"Targeting {len(image_paths_to_process)} pages (PDF pages {start_page} to {start_page + len(image_paths_to_process) - 1}).")
+    print(f"Targeting {len(image_paths_to_process)} pages.")
     
     # Phase 2: VLM Parsing
     processed_pages = set()
@@ -68,13 +67,11 @@ def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: i
 
     pages_to_process = []
     for img_path in image_paths_to_process:
-        # Extract page number from filename (e.g. page_417.png -> 417)
         try:
             page_num = int(os.path.basename(img_path).split('_')[1].split('.')[0])
             if page_num not in processed_pages:
                 pages_to_process.append((img_path, page_num))
-        except:
-            continue
+        except: continue
 
     if not pages_to_process:
         print("All requested pages are already processed. Skipping VLM initialization.")
@@ -92,26 +89,20 @@ def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: i
                 }
                 f.write(json.dumps(chunk) + "\n")
     else:
-        # Use provided parser or get/create the global one
         if parser is None:
             parser = get_vlm_parser()
             
         with open(output_file, "a", encoding="utf-8") as f:
             for img_path, page_num in pages_to_process:
                 try:
-                    page_data = parser.parse_page(img_path, page_num, source_filename)
+                    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
                     if page_data:
-                        # O(1) Append to JSONL
                         f.write(json.dumps(page_data.dict()) + "\n")
-                        f.flush() # Ensure it's written to disk immediately
+                        f.flush()
                     else:
-                        err_msg = f"VLM returned None for page {page_num}"
-                        print(err_msg)
-                        log_error(err_msg)
+                        log_error(f"VLM returned None for page {page_num}")
                 except Exception as e:
-                    err_msg = f"CRITICAL failure on page {page_num}: {e}"
-                    print(err_msg)
-                    log_error(err_msg)
+                    log_error(f"CRITICAL failure on page {page_num}: {e}")
                 
     print("Ingestion complete.")
 
@@ -121,7 +112,8 @@ if __name__ == "__main__":
     parser.add_argument("--out", type=str, default="data/interim/raw_chunks.jsonl", help="Output path for JSONL chunks")
     parser.add_argument("--start", type=int, default=1, help="Page number to start from")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of pages to process")
+    parser.add_argument("--mode", type=str, default="standard", choices=["standard", "abbrev"], help="Processing mode")
     parser.add_argument("--mock", action="store_true", help="Run in mock mode (no VLM)")
     
     args = parser.parse_args()
-    run_ingestion(args.pdf, args.out, start_page=args.start, limit=args.limit, mock=args.mock)
+    run_ingestion(args.pdf, args.out, start_page=args.start, limit=args.limit, mock=args.mock, mode=args.mode)
