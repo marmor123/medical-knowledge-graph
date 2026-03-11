@@ -35,6 +35,7 @@ class MedicalMention(BaseModel):
     text: str
     role: str = Field(description="MUST be one of: Symptom, Diagnosis, LabValue, RiskFactor, Treatment")
     context: Optional[str] = Field(None, description="Optional surrounding context")
+    is_negated: bool = Field(default=False, description="True if the text indicates the absence of the concept (e.g., 'no fever')")
 
 class MedicalPageChunk(BaseModel):
     source_file: str
@@ -48,18 +49,16 @@ class MedicalPageChunk(BaseModel):
     @classmethod
     def coerce_lists(cls, data: Any) -> Any:
         if isinstance(data, dict):
-            # 1. Handle aliasing (VLM sometimes says 'clinical_concepts' or 'clinical_shorthand')
+            # 1. Handle aliasing
             if 'clinical_concepts' in data and 'mentions' not in data:
                 data['mentions'] = data.pop('clinical_concepts')
-            if 'clinical_shorthand' in data and 'clinical_shorthand_detected' not in data:
-                data['clinical_shorthand_detected'] = data.pop('clinical_shorthand')
             
             # 2. Handle single-item wrapping
             for field in ['mentions', 'tables', 'clinical_shorthand_detected']:
                 if field in data and isinstance(data[field], dict):
                     data[field] = [data[field]]
             
-            # 3. Handle malformed table rows (must be list of lists)
+            # 3. Handle malformed table rows
             if 'tables' in data and isinstance(data['tables'], list):
                 for table in data['tables']:
                     if 'rows' in table and isinstance(table['rows'], list):
@@ -100,6 +99,7 @@ class VLMParser:
         if torch.cuda.is_available():
             print("🚀 Enabling NF4 Quantization...")
             try:
+                import bitsandbytes
                 load_kwargs["quantization_config"] = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=self.torch_dtype,
@@ -143,9 +143,10 @@ class VLMParser:
                 "CRITICAL CONSTRAINTS:\n"
                 "1. YOU MUST USE THESE EXACT KEYS: 'mentions', 'clinical_shorthand_detected', 'tables', 'text_content'.\n"
                 "2. 'mentions': List all medical concepts. EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
-                "3. 'text_content': YOU MUST EXTRACT THE FULL TEXT OF THE PAGE HERE. DO NOT SKIP THIS.\n"
+                "   - 'is_negated': Set to true ONLY if the text explicitly excludes the finding (e.g., 'no fever', 'absence of SOB').\n"
+                "3. 'text_content': YOU MUST EXTRACT THE FULL TEXT OF THE PAGE HERE.\n"
                 "4. If a field has no data, return an empty list [].\n\n"
-                "OUTPUT FORMAT: {\"mentions\": [], \"clinical_shorthand_detected\": [], \"tables\": [], \"text_content\": \"...\"}"
+                "OUTPUT FORMAT: {\"mentions\": [{\"text\": \"...\", \"role\": \"...\", \"is_negated\": false}], \"clinical_shorthand_detected\": [], \"tables\": [], \"text_content\": \"...\"}"
             )
 
         messages = [{"role": "user", "content": [{"type": "image", "image": f"file://{os.path.abspath(image_path)}", "max_pixels": px * px}, {"type": "text", "text": prompt}]}]
@@ -159,7 +160,6 @@ class VLMParser:
         generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
         output_text = self.processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         
-        # Use json_repair or regex fallback
         data = None
         if json_repair:
             try: data = json_repair.loads(output_text)
