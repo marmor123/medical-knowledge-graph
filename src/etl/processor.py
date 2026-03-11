@@ -5,7 +5,7 @@ from typing import List
 from .rasterizer import rasterize_pdf
 from .vlm_parser import VLMParser, MedicalPageChunk
 
-def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool = False):
+def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool = False, parser: VLMParser = None):
     """
     Main entry point for the medical PDF ingestion pipeline.
     """
@@ -60,7 +60,10 @@ def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool
                 "clinical_shorthand_detected": []
             })
     else:
-        parser = VLMParser()
+        # Use provided parser or instantiate a new one
+        if parser is None:
+            parser = VLMParser()
+            
         for img_path, page_num in pages_to_process:
             page_data = parser.parse_page(img_path, page_num, source_filename)
             if page_data:
