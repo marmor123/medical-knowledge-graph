@@ -25,6 +25,10 @@ class MedicalMention(BaseModel):
     role: str = Field(description="One of: Symptom, Diagnosis, LabValue, RiskFactor, Treatment")
     context: Optional[str] = Field(None, description="Optional surrounding context for disambiguation")
 
+from pydantic import BaseModel, Field, model_validator
+
+# ... (rest of imports)
+
 class MedicalPageChunk(BaseModel):
     source_file: str
     page_number: int
@@ -32,6 +36,16 @@ class MedicalPageChunk(BaseModel):
     mentions: List[MedicalMention] = Field(default_factory=list)
     tables: List[TableStructure] = Field(default_factory=list)
     clinical_shorthand_detected: List[Dict[str, str]] = Field(default_factory=list, description="Maps shorthand to full terms if found")
+
+    @model_validator(mode='before')
+    @classmethod
+    def coerce_lists(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            for field in ['mentions', 'tables', 'clinical_shorthand_detected']:
+                if field in data and isinstance(data[field], dict):
+                    # If VLM returned a single dict instead of a list, wrap it
+                    data[field] = [data[field]]
+        return data
 
 class VLMParser:
     def __init__(self, model_name: str = "Qwen/Qwen2-VL-2B-Instruct"):
