@@ -52,6 +52,8 @@ class MedicalPageChunk(BaseModel):
             # 1. Handle aliasing
             if 'clinical_concepts' in data and 'mentions' not in data:
                 data['mentions'] = data.pop('clinical_concepts')
+            if 'clinical_shorthand' in data and 'clinical_shorthand_detected' not in data:
+                data['clinical_shorthand_detected'] = data.pop('clinical_shorthand')
             
             # 2. Handle single-item wrapping
             for field in ['mentions', 'tables', 'clinical_shorthand_detected']:
@@ -70,7 +72,7 @@ class MedicalPageChunk(BaseModel):
 class VLMParser:
     def __init__(self, model_name: str = "Qwen/Qwen3-VL-8B-Instruct", abbrev_path: str = "data/interim/abbreviations.json"):
         """
-        Initializes the VLM with extreme RAM efficiency and explicit device mapping.
+        Initializes the VLM with extreme RAM efficiency and strict device mapping for parallel jobs.
         """
         print(f"[{time.strftime('%H:%M:%S')}] Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -91,7 +93,7 @@ class VLMParser:
         
         load_kwargs = {
             "torch_dtype": self.torch_dtype,
-            "device_map": {"": 0} if torch.cuda.is_available() else "cpu", 
+            "device_map": {"": 0} if torch.cuda.is_available() else "cpu", # Force isolated device mapping
             "trust_remote_code": True,
             "low_cpu_mem_usage": True,
         }
@@ -160,6 +162,7 @@ class VLMParser:
         generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
         output_text = self.processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         
+        # Use json_repair or regex fallback
         data = None
         if json_repair:
             try: data = json_repair.loads(output_text)
