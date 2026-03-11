@@ -7,10 +7,11 @@ from pydantic import BaseModel, Field, model_validator
 from PIL import Image
 
 try:
-    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
+    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig, AutoModelForCausalLM
 except ImportError:
     from transformers import AutoModel as AutoModelForVision2Seq
     from transformers import AutoProcessor, BitsAndBytesConfig
+    from transformers import AutoModelForCausalLM
 
 from qwen_vl_utils import process_vision_info
 
@@ -56,7 +57,11 @@ class VLMParser:
         """
         print(f"Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        
+        # T4 Optimization: Use float16
         self.torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        
+        print(f"Loading Qwen3-8B on {self.device} with {self.torch_dtype}...")
         
         load_kwargs = {
             "torch_dtype": self.torch_dtype,
@@ -65,7 +70,7 @@ class VLMParser:
         }
         
         if torch.cuda.is_available():
-            print("🚀 Enabling NF4 4-bit quantization...")
+            print("🚀 Enabling NF4 4-bit quantization for Qwen3-8B...")
             try:
                 import bitsandbytes
                 load_kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -77,19 +82,28 @@ class VLMParser:
             except ImportError:
                 print("❌ bitsandbytes not found.")
 
+        # Try multiple AutoModel classes to find one with .generate()
         try:
+            print("Attempting to load with AutoModelForVision2Seq...")
             self.model = AutoModelForVision2Seq.from_pretrained(model_name, **load_kwargs)
-        except:
-            from transformers import AutoModel
-            self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
+        except Exception as e:
+            print(f"AutoModelForVision2Seq failed: {e}. Trying AutoModelForCausalLM...")
+            try:
+                self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+            except Exception as e2:
+                print(f"AutoModelForCausalLM failed: {e2}. Falling back to basic AutoModel...")
+                from transformers import AutoModel
+                self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
 
         self.processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
         print(f"Model loaded successfully. Class: {self.model.__class__.__name__}")
+        
+        if not hasattr(self.model, "generate"):
+            print("❌ CRITICAL WARNING: Loaded model class STILL has no 'generate' method.")
 
     def parse_page(self, image_path: str, page_number: int, source_file: str, mode: str = "standard") -> Optional[MedicalPageChunk]:
         """
-        Processes a single page image.
-        Modes: 'standard' (full clinical extraction), 'abbrev' (dictionary mapping only).
+        Processes a single page image using Qwen3-8B visual reasoning.
         """
         print(f"--- Processing Page {page_number} (Mode: {mode}) ---")
         
@@ -160,3 +174,6 @@ class VLMParser:
         if "text_content" not in data: data["text_content"] = "Extraction incomplete"
         
         return MedicalPageChunk(**data)
+
+if __name__ == "__main__":
+    pass
