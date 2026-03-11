@@ -33,53 +33,59 @@ class KuzuLoader:
             
         print(f"Loading {len(chunks)} chunks into Kùzu...")
         
-        for i, chunk in enumerate(chunks):
-            chunk_id = f"{chunk['source_file']}_pg{chunk['page_number']}"
-            
-            # 1. Insert Chunk
-            self.conn.execute(
-                "MERGE (c:Chunk {id: $id, source_file: $src, page_number: $pg, text_content: $txt})",
-                {"id": chunk_id, "src": chunk["source_file"], "pg": chunk["page_number"], "txt": chunk["text_content"]}
-            )
-            
-            # 2. Process Mentions
-            mentions = chunk.get("mentions", [])
-            for m in mentions:
-                text = m["text"]
-                role = m["role"]
-                mention_id = f"{text}_{role}"
+        self.conn.execute("BEGIN TRANSACTION")
+        try:
+            for i, chunk in enumerate(chunks):
+                chunk_id = f"{chunk['source_file']}_pg{chunk['page_number']}"
                 
-                # Resolve mention to canonical entity
-                resolved = self.resolver.resolve(text)
-                
-                # 3. Insert Entity (The canonical Concept) - Skip if UNKNOWN
-                if resolved["cui"] != "UNKNOWN":
-                    self.conn.execute(
-                        "MERGE (e:Entity {cui: $cui, name: $name})",
-                        {"cui": resolved["cui"], "name": resolved["canonical_name"]}
-                    )
-                
-                # 4. Insert Mention (The physical occurrence)
+                # 1. Insert Chunk
                 self.conn.execute(
-                    "MERGE (m:Mention {id: $id, text: $txt, role: $role})",
-                    {"id": mention_id, "txt": text, "role": role}
+                    "MERGE (c:Chunk {id: $id, source_file: $src, page_number: $pg, text_content: $txt})",
+                    {"id": chunk_id, "src": chunk["source_file"], "pg": chunk["page_number"], "txt": chunk["text_content"]}
                 )
                 
-                # 5. Create Edges
-                if resolved["cui"] != "UNKNOWN":
+                # 2. Process Mentions
+                mentions = chunk.get("mentions", [])
+                for m in mentions:
+                    text = m["text"]
+                    role = m["role"]
+                    mention_id = f"{text}_{role}"
+                    
+                    # Resolve mention to canonical entity
+                    resolved = self.resolver.resolve(text)
+                    
+                    # 3. Insert Entity (The canonical Concept) - Skip if UNKNOWN
+                    if resolved["cui"] != "UNKNOWN":
+                        self.conn.execute(
+                            "MERGE (e:Entity {cui: $cui, name: $name})",
+                            {"cui": resolved["cui"], "name": resolved["canonical_name"]}
+                        )
+                    
+                    # 4. Insert Mention (The physical occurrence)
                     self.conn.execute(
-                        "MATCH (m:Mention), (e:Entity) WHERE m.id = $mid AND e.cui = $cui "
-                        "MERGE (m)-[:REFERS_TO]->(e)",
-                        {"mid": mention_id, "cui": resolved["cui"]}
+                        "MERGE (m:Mention {id: $id, text: $txt, role: $role})",
+                        {"id": mention_id, "txt": text, "role": role}
                     )
-                
-                self.conn.execute(
-                    "MATCH (m:Mention), (c:Chunk) WHERE m.id = $mid AND c.id = $cid "
-                    "MERGE (m)-[:APPEARS_IN]->(c)",
-                    {"mid": mention_id, "cid": chunk_id}
-                )
-                
-        print("Data load complete.")
+                    
+                    # 5. Create Edges
+                    if resolved["cui"] != "UNKNOWN":
+                        self.conn.execute(
+                            "MATCH (m:Mention), (e:Entity) WHERE m.id = $mid AND e.cui = $cui "
+                            "MERGE (m)-[:REFERS_TO]->(e)",
+                            {"mid": mention_id, "cui": resolved["cui"]}
+                        )
+                    
+                    self.conn.execute(
+                        "MATCH (m:Mention), (c:Chunk) WHERE m.id = $mid AND c.id = $cid "
+                        "MERGE (m)-[:APPEARS_IN]->(c)",
+                        {"mid": mention_id, "cid": chunk_id}
+                    )
+            self.conn.execute("COMMIT")
+            print("Data load complete.")
+        except Exception as e:
+            self.conn.execute("ROLLBACK")
+            print(f"Error during batch load, transaction rolled back: {e}")
+            raise e
 
 if __name__ == "__main__":
     import argparse
