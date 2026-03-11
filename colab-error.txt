@@ -1,9 +1,45 @@
-Qwen3-8B Model loaded successfully.
---- Processing Page 4 (Qwen3-8B) ---
-CRITICAL ERROR parsing page 4: 'Qwen3VLModel' object has no attribute 'generate'
-Skipping page 4 due to error.
---- Processing Page 5 (Qwen3-8B) ---
-CRITICAL ERROR parsing page 5: 'Qwen3VLModel' object has no attribute 'generate'
-Skipping page 5 due to error.
-Final save of 3 chunks to data/interim/raw_chunks.json...
-Ingestion complete.
+code:
+from src.etl.vlm_parser import VLMParser
+from src.etl.processor import run_ingestion
+
+# 1. Load the model ONCE
+shared_parser = VLMParser()
+
+# 2. Run ingestion (it will use the already-loaded model)
+run_ingestion(
+    pdf_path="Pocket Medicine 9th Edition 2026.pdf",
+    output_file="data/interim/raw_chunks.json",
+    parser=shared_parser
+)
+output:
+Initializing SOTA VLM: Qwen/Qwen3-VL-8B-Instruct
+Loading Qwen3-8B on cuda...
+🚀 Enabling NF4 4-bit quantization for Qwen3-8B...
+You are using a model of type qwen3_vl to instantiate a model of type qwen2_vl. This is not supported for all configurations of models and can yield errors.
+Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_interleaved'}
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+/tmp/ipykernel_810/1921194445.py in <cell line: 0>()
+      3 
+      4 # 1. Load the model ONCE
+----> 5 shared_parser = VLMParser()
+      6 
+      7 # 2. Run ingestion (it will use the already-loaded model)
+
+3 frames
+/usr/local/lib/python3.12/dist-packages/transformers/quantizers/quantizer_bnb_4bit.py in validate_environment(self, *args, **kwargs)
+     58             )
+     59         if not is_bitsandbytes_available():
+---> 60             raise ImportError(
+     61                 f"Using `bitsandbytes` 4-bit quantization requires bitsandbytes: `pip install -U bitsandbytes>={BITSANDBYTES_MIN_VERSION}`"
+     62             )
+
+ImportError: Using `bitsandbytes` 4-bit quantization requires bitsandbytes: `pip install -U bitsandbytes>=0.46.1`
+
+---------------------------------------------------------------------------
+NOTE: If your import is failing due to a missing package, you can
+manually install dependencies using either !pip or !apt.
+
+To view examples of installing some common dependencies, click the
+"Open Examples" button below.
+---------------------------------------------------------------------------

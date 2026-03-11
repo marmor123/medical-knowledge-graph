@@ -5,17 +5,12 @@ import re
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field, model_validator
 from PIL import Image
+
 try:
-    # Qwen3-VL uses Qwen2_5_VL classes in latest transformers
-    from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor, BitsAndBytesConfig
-    HAS_QWEN2_5 = True
+    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
 except ImportError:
-    HAS_QWEN2_5 = False
-    try:
-        from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
-    except ImportError:
-        from transformers import AutoModel as AutoModelForVision2Seq
-        from transformers import AutoProcessor, BitsAndBytesConfig
+    from transformers import AutoModel as AutoModelForVision2Seq
+    from transformers import AutoProcessor, BitsAndBytesConfig
 
 from qwen_vl_utils import process_vision_info
 
@@ -58,7 +53,7 @@ class VLMParser:
         """
         Initializes the state-of-the-art Qwen3-VL 8B model.
         """
-        print(f"Initializing SOTA VLM: {model_name}")
+        print(f"Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.torch_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
         
@@ -67,45 +62,38 @@ class VLMParser:
         load_kwargs = {
             "torch_dtype": self.torch_dtype,
             "device_map": "auto",
+            "trust_remote_code": True, # Required for some Qwen3 custom layers
         }
         
         if torch.cuda.is_available():
             print("🚀 Enabling NF4 4-bit quantization for Qwen3-8B...")
-            load_kwargs["quantization_config"] = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_compute_dtype=self.torch_dtype,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4",
-            )
-
-        # Priority 1: Use specific Qwen2_5_VL class (Correct for Qwen3-VL weights)
-        if HAS_QWEN2_5:
-            self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-                model_name, **load_kwargs
-            )
-        else:
-            # Priority 2: Use AutoModelForVision2Seq
             try:
-                from transformers import AutoModelForVision2Seq
-                self.model = AutoModelForVision2Seq.from_pretrained(
-                    model_name, **load_kwargs
+                import bitsandbytes
+                print(f"bitsandbytes version: {bitsandbytes.__version__}")
+                load_kwargs["quantization_config"] = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=self.torch_dtype,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4",
                 )
-            except:
-                # Priority 3: Fallback to basic AutoModel
-                from transformers import AutoModel
-                self.model = AutoModel.from_pretrained(
-                    model_name, **load_kwargs
-                )
-        
-        # Verify that the model has a generate method
-        if not hasattr(self.model, "generate"):
-            print("⚠️ WARNING: Loaded model class does not have 'generate' method. Trying to resolve...")
-            # This can happen if AutoModel loads the base class instead of the ForCausalLM/ForConditionalGeneration class
-            if hasattr(self.model, "model") and hasattr(self.model.model, "generate"):
-                # Sometimes it's wrapped
-                pass 
+            except ImportError:
+                print("❌ ERROR: bitsandbytes not found. 4-bit quantization disabled.")
+            except Exception as e:
+                print(f"⚠️ WARNING: Failed to configure quantization: {e}")
+                print("Tip: In Colab, run '!pip install -U bitsandbytes>=0.46.1' and RESTART RUNTIME.")
 
-        self.processor = AutoProcessor.from_pretrained(model_name)
+        # Using AutoModelForVision2Seq
+        try:
+            self.model = AutoModelForVision2Seq.from_pretrained(
+                model_name, 
+                **load_kwargs
+            )
+        except Exception as e:
+            print(f"Primary load failed: {e}. Retrying with generic AutoModel...")
+            from transformers import AutoModel
+            self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
+
+        self.processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
         print(f"Model loaded successfully. Class: {self.model.__class__.__name__}")
 
     def _manual_repair(self, s: str) -> str:
