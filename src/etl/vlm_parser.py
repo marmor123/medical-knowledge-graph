@@ -52,24 +52,27 @@ class VLMParser:
     def __init__(self, model_name: str = "Qwen/Qwen3-VL-8B-Instruct"):
         """
         Initializes the state-of-the-art Qwen3-VL 8B model.
+        Optimized for Kaggle T4 GPUs (using float16 instead of bfloat16).
         """
-        print(f"Initializing VLM: {model_name}")
+        print(f"Initializing SOTA VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.torch_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
         
-        print(f"Loading Qwen3-8B on {self.device}...")
+        # T4 Optimization: Use float16 (T4 does not support bfloat16 natively)
+        # bfloat16 will run on T4 but it is extremely slow due to lack of hardware support.
+        self.torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        
+        print(f"Loading Qwen3-8B on {self.device} with {self.torch_dtype}...")
         
         load_kwargs = {
             "torch_dtype": self.torch_dtype,
             "device_map": "auto",
-            "trust_remote_code": True, # Required for some Qwen3 custom layers
+            "trust_remote_code": True,
         }
         
         if torch.cuda.is_available():
             print("🚀 Enabling NF4 4-bit quantization for Qwen3-8B...")
             try:
                 import bitsandbytes
-                print(f"bitsandbytes version: {bitsandbytes.__version__}")
                 load_kwargs["quantization_config"] = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=self.torch_dtype,
@@ -77,19 +80,12 @@ class VLMParser:
                     bnb_4bit_quant_type="nf4",
                 )
             except ImportError:
-                print("❌ ERROR: bitsandbytes not found. 4-bit quantization disabled.")
-            except Exception as e:
-                print(f"⚠️ WARNING: Failed to configure quantization: {e}")
-                print("Tip: In Colab, run '!pip install -U bitsandbytes>=0.46.1' and RESTART RUNTIME.")
+                print("❌ bitsandbytes not found. Quantization disabled.")
 
-        # Using AutoModelForVision2Seq
         try:
-            self.model = AutoModelForVision2Seq.from_pretrained(
-                model_name, 
-                **load_kwargs
-            )
+            self.model = AutoModelForVision2Seq.from_pretrained(model_name, **load_kwargs)
         except Exception as e:
-            print(f"Primary load failed: {e}. Retrying with generic AutoModel...")
+            print(f"Primary load failed: {e}. Falling back to basic AutoModel...")
             from transformers import AutoModel
             self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
 
@@ -142,7 +138,7 @@ class VLMParser:
                     {
                         "type": "image", 
                         "image": f"file://{os.path.abspath(image_path)}",
-                        "max_pixels": 768 * 768, 
+                        "max_pixels": 1280 * 1280, # Increased for tiny 'Pocket Medicine' text
                     },
                     {"type": "text", "text": prompt},
                 ],
