@@ -48,9 +48,23 @@ class MedicalPageChunk(BaseModel):
     @classmethod
     def coerce_lists(cls, data: Any) -> Any:
         if isinstance(data, dict):
+            # 1. Handle aliasing (VLM sometimes says 'clinical_concepts')
+            if 'clinical_concepts' in data and 'mentions' not in data:
+                data['mentions'] = data.pop('clinical_concepts')
+            
+            # 2. Handle single-item wrapping
             for field in ['mentions', 'tables', 'clinical_shorthand_detected']:
                 if field in data and isinstance(data[field], dict):
                     data[field] = [data[field]]
+            
+            # 3. Handle malformed table rows (must be list of lists)
+            if 'tables' in data and isinstance(data['tables'], list):
+                for table in data['tables']:
+                    if 'rows' in table and isinstance(table['rows'], list):
+                        for i, row in enumerate(table['rows']):
+                            if isinstance(row, dict):
+                                # Coerce dict row to list of its values
+                                table['rows'][i] = list(row.values())
         return data
 
 class VLMParser:
