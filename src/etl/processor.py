@@ -3,9 +3,19 @@ import json
 import argparse
 import time
 import traceback
-from typing import List
+from typing import List, Optional
 from .rasterizer import rasterize_pdf
 from .vlm_parser import VLMParser, MedicalPageChunk
+
+# Singleton-like cache for the parser to prevent redundant loading in notebooks
+_GLOBAL_VLM_PARSER = None
+
+def get_vlm_parser(model_name: str = "Qwen/Qwen3-VL-8B-Instruct") -> VLMParser:
+    """Helper to ensure the VLM is only loaded once per session."""
+    global _GLOBAL_VLM_PARSER
+    if _GLOBAL_VLM_PARSER is None:
+        _GLOBAL_VLM_PARSER = VLMParser(model_name=model_name)
+    return _GLOBAL_VLM_PARSER
 
 def log_error(error_msg: str):
     """Logs error messages to a dedicated file for remote debugging."""
@@ -15,7 +25,7 @@ def log_error(error_msg: str):
         f.write(error_msg + "\n")
         f.write(traceback.format_exc() + "\n\n")
 
-def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool = False, parser: VLMParser = None):
+def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool = False, parser: Optional[VLMParser] = None):
     """
     Main entry point for the medical PDF ingestion pipeline.
     Uses JSONL for O(1) incremental saving and robust error logging.
@@ -74,9 +84,9 @@ def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool
                 }
                 f.write(json.dumps(chunk) + "\n")
     else:
-        # Use provided parser or instantiate a new one
+        # Use provided parser or get/create the global one
         if parser is None:
-            parser = VLMParser()
+            parser = get_vlm_parser()
             
         with open(output_file, "a", encoding="utf-8") as f:
             for img_path, page_num in pages_to_process:
@@ -85,7 +95,7 @@ def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool
                     if page_data:
                         # O(1) Append to JSONL
                         f.write(json.dumps(page_data.dict()) + "\n")
-                        f.flush()
+                        f.flush() # Ensure it's written to disk immediately
                     else:
                         err_msg = f"VLM returned None for page {page_num}"
                         print(err_msg)
