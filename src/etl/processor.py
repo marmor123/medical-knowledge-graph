@@ -8,6 +8,7 @@ from .vlm_parser import VLMParser, MedicalPageChunk
 def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool = False, parser: VLMParser = None):
     """
     Main entry point for the medical PDF ingestion pipeline.
+    Uses JSONL for O(1) incremental saving.
     """
     print(f"Starting ingestion for {pdf_path}...")
     
@@ -26,21 +27,22 @@ def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool
         print(f"Limited ingestion to first {limit} pages.")
         
     # Phase 2: VLM Parsing
-    results = []
+    processed_pages = set()
     source_filename = os.path.basename(pdf_path)
     
-    # Load existing progress if available
+    # Load existing progress from JSONL
     if os.path.exists(output_file):
         try:
             with open(output_file, "r", encoding="utf-8") as f:
-                results = json.load(f)
-            print(f"Loaded {len(results)} existing chunks from {output_file}.")
-        except:
-            pass
+                for line in f:
+                    if line.strip():
+                        chunk = json.loads(line)
+                        processed_pages.add(chunk["page_number"])
+            print(f"Detected {len(processed_pages)} already processed pages.")
+        except Exception as e:
+            print(f"Progress check warning: {e}")
 
-    processed_pages = {r["page_number"] for r in results}
     pages_to_process = []
-    
     for i, img_path in enumerate(image_paths):
         page_num = i + 1
         if page_num not in processed_pages:
@@ -50,42 +52,38 @@ def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool
         print("All requested pages are already processed. Skipping VLM initialization.")
     elif mock:
         print("MOCK MODE: Simulating VLM parsing...")
-        for img_path, page_num in pages_to_process:
-            results.append({
-                "source_file": source_filename,
-                "page_number": page_num,
-                "text_content": f"Mock text content for page {page_num}",
-                "mentions": [],
-                "tables": [],
-                "clinical_shorthand_detected": []
-            })
+        with open(output_file, "a", encoding="utf-8") as f:
+            for img_path, page_num in pages_to_process:
+                chunk = {
+                    "source_file": source_filename,
+                    "page_number": page_num,
+                    "text_content": f"Mock text content for page {page_num}",
+                    "mentions": [],
+                    "tables": [],
+                    "clinical_shorthand_detected": []
+                }
+                f.write(json.dumps(chunk) + "\n")
     else:
         # Use provided parser or instantiate a new one
         if parser is None:
             parser = VLMParser()
             
-        for img_path, page_num in pages_to_process:
-            page_data = parser.parse_page(img_path, page_num, source_filename)
-            if page_data:
-                results.append(page_data.dict())
-                # Incremental save
-                with open(output_file, "w", encoding="utf-8") as f:
-                    json.dump(results, f, indent=4)
-            else:
-                print(f"Skipping page {page_num} due to error.")
+        with open(output_file, "a", encoding="utf-8") as f:
+            for img_path, page_num in pages_to_process:
+                page_data = parser.parse_page(img_path, page_num, source_filename)
+                if page_data:
+                    # O(1) Append to JSONL
+                    f.write(json.dumps(page_data.dict()) + "\n")
+                    f.flush() # Ensure it's written to disk immediately
+                else:
+                    print(f"Skipping page {page_num} due to error.")
                 
-    # Phase 3: Final save (redundant but safe)
-    print(f"Final save of {len(results)} chunks to {output_file}...")
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=4)
-        
     print("Ingestion complete.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Medical Knowledge Graph Ingestion Pipeline")
     parser.add_argument("--pdf", type=str, required=True, help="Path to the source medical PDF")
-    parser.add_argument("--out", type=str, default="data/interim/raw_chunks.json", help="Output path for JSON chunks")
+    parser.add_argument("--out", type=str, default="data/interim/raw_chunks.jsonl", help="Output path for JSONL chunks")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of pages to process")
     parser.add_argument("--mock", action="store_true", help="Run in mock mode (no VLM)")
     

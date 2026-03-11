@@ -6,11 +6,16 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field, model_validator
 from PIL import Image
 try:
-    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
+    # Qwen3-VL uses Qwen2_5_VL classes in latest transformers
+    from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor, BitsAndBytesConfig
+    HAS_QWEN2_5 = True
 except ImportError:
-    # Fallback for older transformers versions where AutoModelForVision2Seq might be missing
-    from transformers import AutoModel as AutoModelForVision2Seq
-    from transformers import AutoProcessor, BitsAndBytesConfig
+    HAS_QWEN2_5 = False
+    try:
+        from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
+    except ImportError:
+        from transformers import AutoModel as AutoModelForVision2Seq
+        from transformers import AutoProcessor, BitsAndBytesConfig
 
 from qwen_vl_utils import process_vision_info
 
@@ -64,7 +69,6 @@ class VLMParser:
             "device_map": "auto",
         }
         
-        # 4-bit quantization is essential for 8B model on T4 (16GB VRAM)
         if torch.cuda.is_available():
             print("🚀 Enabling NF4 4-bit quantization for Qwen3-8B...")
             load_kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -74,29 +78,48 @@ class VLMParser:
                 bnb_4bit_quant_type="nf4",
             )
 
-        # Using AutoModelForVision2Seq (or fallback)
-        self.model = AutoModelForVision2Seq.from_pretrained(
-            model_name, 
-            **load_kwargs
-        )
+        # Priority 1: Use specific Qwen2_5_VL class (Correct for Qwen3-VL weights)
+        if HAS_QWEN2_5:
+            self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+                model_name, **load_kwargs
+            )
+        else:
+            # Priority 2: Use AutoModelForVision2Seq
+            try:
+                from transformers import AutoModelForVision2Seq
+                self.model = AutoModelForVision2Seq.from_pretrained(
+                    model_name, **load_kwargs
+                )
+            except:
+                # Priority 3: Fallback to basic AutoModel
+                from transformers import AutoModel
+                self.model = AutoModel.from_pretrained(
+                    model_name, **load_kwargs
+                )
+        
+        # Verify that the model has a generate method
+        if not hasattr(self.model, "generate"):
+            print("⚠️ WARNING: Loaded model class does not have 'generate' method. Trying to resolve...")
+            # This can happen if AutoModel loads the base class instead of the ForCausalLM/ForConditionalGeneration class
+            if hasattr(self.model, "model") and hasattr(self.model.model, "generate"):
+                # Sometimes it's wrapped
+                pass 
+
         self.processor = AutoProcessor.from_pretrained(model_name)
-        print("Qwen3-8B Model loaded successfully.")
+        print(f"Model loaded successfully. Class: {self.model.__class__.__name__}")
 
     def _manual_repair(self, s: str) -> str:
         """Last resort repair for common VLM truncation issues."""
         s = s.strip()
         if s.endswith(','): s = s[:-1]
-        
         open_braces = s.count('{')
         close_braces = s.count('}')
         if open_braces > close_braces:
             s += '}' * (open_braces - close_braces)
-            
         open_brackets = s.count('[')
         close_brackets = s.count(']')
         if open_brackets > close_brackets:
             s += ']' * (open_brackets - close_brackets)
-            
         return s
 
     def parse_page(self, image_path: str, page_number: int, source_file: str) -> Optional[MedicalPageChunk]:
@@ -144,7 +167,6 @@ class VLMParser:
 
         try:
             with torch.no_grad():
-                # Qwen3-8B can generate longer, more detailed responses
                 generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
             
             generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]

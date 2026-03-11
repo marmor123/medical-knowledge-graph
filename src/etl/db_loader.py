@@ -27,9 +27,25 @@ class KuzuLoader:
                 print(f"Schema init warning: {e}")
 
     def load_chunks(self, chunks_file: str):
-        """Loads extracted JSON chunks, resolves entities, and inserts into Kùzu."""
-        with open(chunks_file, "r", encoding="utf-8") as f:
-            chunks = json.load(f)
+        """
+        Loads extracted JSONL chunks, resolves entities, and inserts into Kùzu.
+        Handles both JSON and JSONL for backward compatibility during transition.
+        """
+        chunks = []
+        try:
+            with open(chunks_file, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content.startswith("["):
+                    # Old JSON format
+                    chunks = json.loads(content)
+                else:
+                    # New JSONL format
+                    for line in content.split("\n"):
+                        if line.strip():
+                            chunks.append(json.loads(line))
+        except Exception as e:
+            print(f"Error reading chunks file {chunks_file}: {e}")
+            return
             
         print(f"Loading {len(chunks)} chunks into Kùzu...")
         
@@ -90,7 +106,7 @@ class KuzuLoader:
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Medical KG Database Loader")
-    parser.add_argument("--chunks", type=str, default="data/interim/raw_chunks.json", help="Path to JSON chunks file")
+    parser.add_argument("--chunks", type=str, default="data/interim/raw_chunks.jsonl", help="Path to chunks file (JSON or JSONL)")
     parser.add_argument("--db", type=str, default="data/db", help="Path to Kùzu DB")
     
     args = parser.parse_args()

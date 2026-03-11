@@ -1,7 +1,9 @@
-File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/content/drive/MyDrive/Colab_Projects/medical-knowledge-graph/src/etl/processor.py", line 6, in <module>
-    from .vlm_parser import VLMParser, MedicalPageChunk
-  File "/content/drive/MyDrive/Colab_Projects/medical-knowledge-graph/src/etl/vlm_parser.py", line 8, in <module>
-    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
-ImportError: cannot import name 'AutoModelForVision2Seq' from 'transformers' (/usr/local/lib/python3.12/dist-packages/transformers/__init__.py)
+Qwen3-8B Model loaded successfully.
+--- Processing Page 4 (Qwen3-8B) ---
+CRITICAL ERROR parsing page 4: 'Qwen3VLModel' object has no attribute 'generate'
+Skipping page 4 due to error.
+--- Processing Page 5 (Qwen3-8B) ---
+CRITICAL ERROR parsing page 5: 'Qwen3VLModel' object has no attribute 'generate'
+Skipping page 5 due to error.
+Final save of 3 chunks to data/interim/raw_chunks.json...
+Ingestion complete.
