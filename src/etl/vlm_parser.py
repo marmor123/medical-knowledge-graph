@@ -36,25 +36,31 @@ class MedicalPageChunk(BaseModel):
 class VLMParser:
     def __init__(self, model_name: str = "Qwen/Qwen2-VL-2B-Instruct"):
         """
-        Initializes the Qwen2-VL model for document understanding.
+        Initializes the Qwen2-VL model with GPU optimizations for Colab.
         """
-        print(f"Loading model {model_name}...")
+        print(f"Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         
-        # Load the model and processor
+        # Optimization: Use bfloat16 if on GPU, else float32
+        self.torch_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+        
+        print(f"Loading model on {self.device} with {self.torch_dtype}...")
+        
+        # Load the model and processor with auto-device mapping
         self.model = Qwen2VLForConditionalGeneration.from_pretrained(
-            model_name, torch_dtype=torch.float32, device_map="cpu"
+            model_name, 
+            torch_dtype=self.torch_dtype, 
+            device_map="auto" # Let accelerate handle the placement
         )
         self.processor = AutoProcessor.from_pretrained(model_name)
-        print(f"Model loaded on {self.device}.")
+        print("Model loaded.")
 
     def parse_page(self, image_path: str, page_number: int, source_file: str) -> Optional[MedicalPageChunk]:
         """
-        Processes a single page image and returns structured medical data with role-based mentions.
+        Processes a single page image and returns structured medical data.
         """
-        print(f"Parsing page {page_number} from {image_path}...")
+        print(f"Parsing page {page_number}...")
         
-        # Refined prompt for dual-layer schema
         prompt = (
             "You are a medical informatics expert. Analyze this medical textbook page image. "
             "1. Extract all text preserving reading order. "
@@ -83,6 +89,7 @@ class VLMParser:
             }
         ]
 
+        # Template and vision info processing
         text = self.processor.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -96,8 +103,15 @@ class VLMParser:
         )
         inputs = inputs.to(self.device)
 
+        # Inference with optimized settings
         try:
-            generated_ids = self.model.generate(**inputs, max_new_tokens=4096)
+            with torch.no_grad(): # Ensure no gradients for speed
+                generated_ids = self.model.generate(
+                    **inputs, 
+                    max_new_tokens=4096,
+                    do_sample=False # Greedy search is faster and more consistent for extraction
+                )
+            
             generated_ids_trimmed = [
                 out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
             ]
@@ -108,30 +122,25 @@ class VLMParser:
             # Robust JSON extraction and repair
             data = None
             if json_repair:
-                # Use json_repair to handle malformed strings or truncation
                 try:
                     data = json_repair.loads(output_text)
                 except:
                     pass
             
             if not data:
-                # Fallback to manual extraction if json_repair fails or is missing
                 json_match = re.search(r'(\{.*\})', output_text, re.DOTALL)
                 if json_match:
                     json_str = json_match.group(1)
                     data = json.loads(json_str)
                 else:
-                    data = json.loads(output_text) # Last ditch effort
+                    data = json.loads(output_text)
             
-            # Ensure mandatory fields are present
             data["source_file"] = source_file
             data["page_number"] = page_number
             
-            # Validate with Pydantic
             return MedicalPageChunk(**data)
         except Exception as e:
             print(f"Error parsing page {page_number}: {e}")
-            print(f"Raw output snippet: {output_text[:500] if 'output_text' in locals() else 'None'}...")
             return None
 
 if __name__ == "__main__":
