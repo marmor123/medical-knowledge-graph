@@ -29,9 +29,9 @@ class MedicalPageChunk(BaseModel):
     source_file: str
     page_number: int
     text_content: str
-    mentions: List[MedicalMention]
-    tables: List[TableStructure]
-    clinical_shorthand_detected: List[Dict[str, str]] = Field(description="Maps shorthand to full terms if found")
+    mentions: List[MedicalMention] = Field(default_factory=list)
+    tables: List[TableStructure] = Field(default_factory=list)
+    clinical_shorthand_detected: List[Dict[str, str]] = Field(default_factory=list, description="Maps shorthand to full terms if found")
 
 class VLMParser:
     def __init__(self, model_name: str = "Qwen/Qwen2-VL-2B-Instruct"):
