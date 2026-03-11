@@ -3,7 +3,7 @@ import json
 import torch
 import re
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from PIL import Image
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
@@ -17,17 +17,13 @@ except ImportError:
 # Define our strict output schema
 class TableStructure(BaseModel):
     title: Optional[str] = None
-    headers: List[str]
-    rows: List[List[str]]
+    headers: List[str] = Field(default_factory=list)
+    rows: List[List[str]] = Field(default_factory=list)
 
 class MedicalMention(BaseModel):
     text: str
-    role: str = Field(description="One of: Symptom, Diagnosis, LabValue, RiskFactor, Treatment")
-    context: Optional[str] = Field(None, description="Optional surrounding context for disambiguation")
-
-from pydantic import BaseModel, Field, model_validator
-
-# ... (rest of imports)
+    role: str = Field(description="MUST be one of: Symptom, Diagnosis, LabValue, RiskFactor, Treatment")
+    context: Optional[str] = Field(None, description="Optional surrounding context")
 
 class MedicalPageChunk(BaseModel):
     source_file: str
@@ -35,7 +31,7 @@ class MedicalPageChunk(BaseModel):
     text_content: str
     mentions: List[MedicalMention] = Field(default_factory=list)
     tables: List[TableStructure] = Field(default_factory=list)
-    clinical_shorthand_detected: List[Dict[str, str]] = Field(default_factory=list, description="Maps shorthand to full terms if found")
+    clinical_shorthand_detected: List[Dict[str, str]] = Field(default_factory=list)
 
     @model_validator(mode='before')
     @classmethod
@@ -43,7 +39,6 @@ class MedicalPageChunk(BaseModel):
         if isinstance(data, dict):
             for field in ['mentions', 'tables', 'clinical_shorthand_detected']:
                 if field in data and isinstance(data[field], dict):
-                    # If VLM returned a single dict instead of a list, wrap it
                     data[field] = [data[field]]
         return data
 
@@ -68,16 +63,13 @@ class VLMParser:
     def _manual_repair(self, s: str) -> str:
         """Last resort repair for common VLM truncation issues."""
         s = s.strip()
-        # If it ends with a dangling key or truncated value
         if s.endswith(','): s = s[:-1]
         
-        # Count braces
         open_braces = s.count('{')
         close_braces = s.count('}')
         if open_braces > close_braces:
             s += '}' * (open_braces - close_braces)
             
-        # Count brackets
         open_brackets = s.count('[')
         close_brackets = s.count(']')
         if open_brackets > close_brackets:
@@ -91,14 +83,24 @@ class VLMParser:
         """
         print(f"--- Processing Page {page_number} ---")
         
+        # Highly prescriptive prompt to force role adherence and avoid truncation
         prompt = (
-            "You are a medical informatics expert. Analyze this medical textbook page image. "
-            "Output strictly in valid JSON format. "
-            "Do not include any conversational filler or markdown code blocks like ```json. "
-            "Schema: {'source_file': 'str', 'page_number': int, 'text_content': 'str', "
-            "'mentions': [{'text': 'str', 'role': 'str', 'context': 'str'}], "
-            "'tables': [{'title': 'str', 'headers': [], 'rows': [[]]}], "
-            "'clinical_shorthand_detected': [{'shorthand': 'str', 'full_term': 'str'}]}"
+            "Analyze this medical textbook page. Extract all clinical data into a valid JSON object.\n\n"
+            "CONSTRAINTS:\n"
+            "1. 'mentions': List all medical concepts (Symptoms, Diseases, etc.).\n"
+            "   - EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
+            "   - DO NOT use any other role names.\n"
+            "2. 'clinical_shorthand_detected': List pairs of {'shorthand': '...', 'full_term': '...'}.\n"
+            "3. 'tables': Reconstruct any tables found.\n"
+            "4. 'text_content': Extract the full text of the page last.\n"
+            "5. If a field has no data, return an empty list [].\n\n"
+            "OUTPUT FORMAT:\n"
+            "{\n"
+            "  \"mentions\": [{\"text\": \"...\", \"role\": \"...\", \"context\": \"...\"}],\n"
+            "  \"clinical_shorthand_detected\": [],\n"
+            "  \"tables\": [],\n"
+            "  \"text_content\": \"...\"\n"
+            "}"
         )
 
         messages = [
@@ -121,6 +123,7 @@ class VLMParser:
 
         try:
             with torch.no_grad():
+                # We use a high max_new_tokens to ensure complex pages aren't cut off
                 generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
             
             generated_ids_trimmed = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
@@ -129,7 +132,6 @@ class VLMParser:
             # DEBUG LOGGING
             print(f"DEBUG: RAW VLM OUTPUT (Page {page_number}):\n{output_text}\nDEBUG: END RAW OUTPUT")
 
-            # Clean markdown if present
             clean_text = output_text.strip()
             if "```json" in clean_text:
                 clean_text = clean_text.split("```json")[1].split("```")[0].strip()
@@ -140,24 +142,27 @@ class VLMParser:
             if json_repair:
                 try:
                     data = json_repair.loads(clean_text)
-                except Exception as e:
-                    print(f"json_repair failed: {e}")
+                except:
+                    pass
             
             if not data:
                 try:
-                    # Try extraction via regex
                     json_match = re.search(r'(\{.*\})', clean_text, re.DOTALL)
                     if json_match:
                         data = json.loads(json_match.group(1))
                     else:
                         data = json.loads(self._manual_repair(clean_text))
                 except Exception as e:
-                    print(f"Standard json.loads failed after repair attempt: {e}")
+                    print(f"Standard json.loads failed: {e}")
                     raise e
             
-            # Ensure mandatory fields
+            # Ensure mandatory fields are injected by code
             data["source_file"] = source_file
             data["page_number"] = page_number
+            
+            # Ensure text_content exists (fallback if model failed to return it)
+            if "text_content" not in data:
+                data["text_content"] = "Extraction incomplete"
             
             return MedicalPageChunk(**data)
         except Exception as e:
