@@ -1,14 +1,24 @@
 import os
 import json
 import argparse
+import time
+import traceback
 from typing import List
 from .rasterizer import rasterize_pdf
 from .vlm_parser import VLMParser, MedicalPageChunk
 
+def log_error(error_msg: str):
+    """Logs error messages to a dedicated file for remote debugging."""
+    with open("kaggle_errors.log", "a", encoding="utf-8") as f:
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        f.write(f"--- ERROR: {timestamp} ---\n")
+        f.write(error_msg + "\n")
+        f.write(traceback.format_exc() + "\n\n")
+
 def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool = False, parser: VLMParser = None):
     """
     Main entry point for the medical PDF ingestion pipeline.
-    Uses JSONL for O(1) incremental saving.
+    Uses JSONL for O(1) incremental saving and robust error logging.
     """
     print(f"Starting ingestion for {pdf_path}...")
     
@@ -70,13 +80,20 @@ def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool
             
         with open(output_file, "a", encoding="utf-8") as f:
             for img_path, page_num in pages_to_process:
-                page_data = parser.parse_page(img_path, page_num, source_filename)
-                if page_data:
-                    # O(1) Append to JSONL
-                    f.write(json.dumps(page_data.dict()) + "\n")
-                    f.flush() # Ensure it's written to disk immediately
-                else:
-                    print(f"Skipping page {page_num} due to error.")
+                try:
+                    page_data = parser.parse_page(img_path, page_num, source_filename)
+                    if page_data:
+                        # O(1) Append to JSONL
+                        f.write(json.dumps(page_data.dict()) + "\n")
+                        f.flush()
+                    else:
+                        err_msg = f"VLM returned None for page {page_num}"
+                        print(err_msg)
+                        log_error(err_msg)
+                except Exception as e:
+                    err_msg = f"CRITICAL failure on page {page_num}: {e}"
+                    print(err_msg)
+                    log_error(err_msg)
                 
     print("Ingestion complete.")
 
