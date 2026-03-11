@@ -1,3 +1,5 @@
+import os
+import json
 import torch
 from transformers import AutoTokenizer, AutoModel
 from typing import List, Dict, Optional
@@ -6,21 +8,36 @@ import numpy as np
 class MedicalResolver:
     """
     Resolves medical mentions to canonical Concept Unique Identifiers (CUIs).
-    Uses SapBERT for semantic embedding and a vectorized matrix for fast mapping.
+    Uses a hybrid approach:
+    1. Local abbreviation dictionary (extracted from the book).
+    2. Vectorized SapBERT semantic search for canonical mapping.
     """
-    def __init__(self, model_name: str = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"):
+    def __init__(self, 
+                 model_name: str = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext",
+                 abbrev_path: str = "data/interim/abbreviations.json",
+                 threshold: float = 0.7):
         print(f"Initializing MedicalResolver with {model_name}...")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name).to(self.device)
-        self.model.eval() # Set to evaluation mode
+        self.model.eval()
+        self.threshold = threshold
         
-        # Local MVP dictionary
+        # 1. Load Abbreviation Dictionary
+        self.abbreviations = {}
+        if os.path.exists(abbrev_path):
+            try:
+                with open(abbrev_path, "r", encoding="utf-8") as f:
+                    self.abbreviations = json.load(f)
+                print(f"Loaded {len(self.abbreviations)} abbreviations from {abbrev_path}")
+            except Exception as e:
+                print(f"Warning: Failed to load abbreviations: {e}")
+
+        # 2. Local Canonical Concept DB (The "Identity" nodes in our graph)
         self.concept_db = {
             "Diabetes Mellitus": "C0011849",
             "Type 2 Diabetes": "C0011849",
             "Shortness of breath": "C0013404",
-            "SOB": "C0013404",
             "Dyspnea": "C0013404",
             "Myocardial Infarction": "C0027051",
             "Heart Attack": "C0027051",
@@ -28,7 +45,8 @@ class MedicalResolver:
             "Hypertension": "C0020538",
             "High Blood Pressure": "C0020538",
             "Fever": "C0015967",
-            "LDH High": "C0202054"
+            "LDH High": "C0202054",
+            "Abdominal Aortic Aneurysm": "C0000768"
         }
         
         self.concept_names = list(self.concept_db.keys())
@@ -36,57 +54,63 @@ class MedicalResolver:
         self._build_index()
 
     def _build_index(self):
-        """Builds a semantic index of the concept dictionary using a vectorized matrix."""
+        """Builds a semantic index of the canonical concepts."""
         embeddings = []
         for name in self.concept_names:
             emb = self._get_embedding(name)
-            # Normalize embedding upfront for faster cosine similarity via dot product
             emb = emb / emb.norm(dim=-1, keepdim=True)
             embeddings.append(emb)
-        
-        # Stack into (N, D) matrix
         self.db_matrix = torch.cat(embeddings, dim=0)
 
     def _get_embedding(self, text: str) -> torch.Tensor:
-        """Generates a SapBERT embedding for a given string as a PyTorch tensor."""
-        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=25).to(self.device)
+        """Generates a SapBERT embedding."""
+        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=50).to(self.device)
         with torch.no_grad():
             outputs = self.model(**inputs)
-        # Use [CLS] token embedding as sentence representation
         return outputs.last_hidden_state[:, 0, :]
 
     def resolve(self, mention_text: str) -> Dict[str, str]:
         """
-        Maps a mention string to the closest canonical entity in the dictionary using vectorization.
-        Returns a dict with 'cui' and 'canonical_name'.
+        Resolves a mention. If it's a known abbreviation, resolves the expansion.
         """
-        mention_emb = self._get_embedding(mention_text)
-        # Normalize
+        original_text = mention_text.strip()
+        search_text = original_text
+        
+        # Check abbreviation dictionary first
+        if original_text in self.abbreviations:
+            search_text = self.abbreviations[original_text]
+            print(f"Mapping abbreviation: {original_text} -> {search_text}")
+
+        # Vectorized search
+        mention_emb = self._get_embedding(search_text)
         mention_emb = mention_emb / mention_emb.norm(dim=-1, keepdim=True)
         
-        # Vectorized cosine similarity: (1, D) @ (D, N) -> (1, N)
-        # Since both are normalized, dot product is cosine similarity
         similarities = torch.mm(mention_emb, self.db_matrix.t()).squeeze(0)
-        
         best_match_idx = torch.argmax(similarities).item()
         highest_sim = similarities[best_match_idx].item()
         best_match_name = self.concept_names[best_match_idx]
         
-        # Threshold for resolution (MVP: 0.7)
-        if highest_sim > 0.7:
+        if highest_sim > self.threshold:
             return {
                 "cui": self.concept_db[best_match_name],
                 "canonical_name": best_match_name,
-                "confidence": float(highest_sim)
+                "confidence": float(highest_sim),
+                "resolved_via": "abbreviation" if search_text != original_text else "semantic"
             }
         else:
             return {
                 "cui": "UNKNOWN",
-                "canonical_name": mention_text,
-                "confidence": float(highest_sim)
+                "canonical_name": original_text,
+                "confidence": float(highest_sim),
+                "resolved_via": "none"
             }
 
 if __name__ == "__main__":
+    # Create dummy abbrev file for testing if it doesn't exist
+    os.makedirs("data/interim", exist_ok=True)
+    with open("data/interim/abbreviations.json", "w") as f:
+        json.dump({"AAA": "Abdominal Aortic Aneurysm", "SOB": "Shortness of breath"}, f)
+        
     resolver = MedicalResolver()
-    print(resolver.resolve("SOB"))
-    print(resolver.resolve("Type 2 Diabetes"))
+    print(f"Resolving 'AAA': {resolver.resolve('AAA')}")
+    print(f"Resolving 'Diabetes': {resolver.resolve('Diabetes')}")
