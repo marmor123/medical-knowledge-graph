@@ -62,17 +62,28 @@ class MedicalPageChunk(BaseModel):
         return data
 
 class VLMParser:
-    def __init__(self, model_name: str = "Qwen/Qwen3-VL-8B-Instruct"):
+    def __init__(self, model_name: str = "Qwen/Qwen3-VL-8B-Instruct", abbrev_path: str = "data/interim/abbreviations.json"):
         """
         Initializes the state-of-the-art Qwen3-VL 8B model.
-        Optimized for Kaggle T4 GPUs.
+        Loads abbreviation context if available to improve extraction precision.
         """
         print(f"Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
-        # T4 Optimization: Use float16
         self.torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
         
+        # Load Abbreviation Context for Prompt Injection
+        self.abbrev_context = ""
+        if os.path.exists(abbrev_path):
+            try:
+                with open(abbrev_path, "r", encoding="utf-8") as f:
+                    abbrevs = json.load(f)
+                    # Limit to top 150 relevant abbreviations to save prompt tokens
+                    sample_list = [f"{k}: {v}" for k, v in list(abbrevs.items())[:150]]
+                    self.abbrev_context = "\n".join(sample_list)
+                print(f"Loaded {len(abbrevs)} abbreviations for prompt context.")
+            except:
+                pass
+
         print(f"Loading Qwen3-8B on {self.device} with {self.torch_dtype}...")
         
         load_kwargs = {
@@ -94,7 +105,7 @@ class VLMParser:
             except ImportError:
                 print("❌ bitsandbytes not found.")
 
-        # Load the model using the most appropriate class
+        # Load the model
         try:
             print(f"Attempting load with class: {Qwen3VLForConditionalGeneration.__name__}")
             self.model = Qwen3VLForConditionalGeneration.from_pretrained(
@@ -109,9 +120,6 @@ class VLMParser:
 
         self.processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
         print(f"Model loaded successfully. Class: {self.model.__class__.__name__}")
-        
-        if not hasattr(self.model, "generate"):
-            print("❌ CRITICAL ERROR: Loaded model class has no 'generate' method.")
 
     def parse_page(self, image_path: str, page_number: int, source_file: str, mode: str = "standard") -> Optional[MedicalPageChunk]:
         """
@@ -133,8 +141,15 @@ class VLMParser:
                 "}"
             )
         else:
+            # Inject abbreviation context into the prompt
+            context_block = ""
+            if self.abbrev_context:
+                context_block = f"\nCLINICAL CONTEXT (Common abbreviations in this book):\n{self.abbrev_context}\n"
+
             prompt = (
-                "Analyze this medical textbook page. Extract all clinical data into a valid JSON object.\n\n"
+                "You are a medical informatics expert. Analyze this medical textbook page.\n"
+                "Extract all clinical data into a valid JSON object.\n"
+                f"{context_block}\n"
                 "CONSTRAINTS:\n"
                 "1. 'mentions': List all medical concepts.\n"
                 "   - EACH 'role' MUST be exactly one of: [Symptom, Diagnosis, LabValue, RiskFactor, Treatment].\n"
