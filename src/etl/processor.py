@@ -25,12 +25,12 @@ def log_error(error_msg: str):
         f.write(error_msg + "\n")
         f.write(traceback.format_exc() + "\n\n")
 
-def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool = False, parser: Optional[VLMParser] = None):
+def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: int = None, mock: bool = False, parser: Optional[VLMParser] = None):
     """
     Main entry point for the medical PDF ingestion pipeline.
-    Uses JSONL for O(1) incremental saving and robust error logging.
+    Allows targeting specific page ranges.
     """
-    print(f"Starting ingestion for {pdf_path}...")
+    print(f"Starting ingestion for {pdf_path} from page {start_page}...")
     
     # Setup directories
     image_folder = "data/interim/images"
@@ -42,10 +42,14 @@ def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool
         print("Failed to rasterize PDF. Aborting.")
         return
         
-    if limit:
-        image_paths = image_paths[:limit]
-        print(f"Limited ingestion to first {limit} pages.")
-        
+    # Apply start and limit constraints
+    # Note: image_paths is 0-indexed, so page 1 is index 0
+    start_index = max(0, start_page - 1)
+    end_index = start_index + limit if limit else len(image_paths)
+    image_paths_to_process = image_paths[start_index : end_index]
+    
+    print(f"Targeting {len(image_paths_to_process)} pages (PDF pages {start_page} to {start_page + len(image_paths_to_process) - 1}).")
+    
     # Phase 2: VLM Parsing
     processed_pages = set()
     source_filename = os.path.basename(pdf_path)
@@ -63,10 +67,14 @@ def run_ingestion(pdf_path: str, output_file: str, limit: int = None, mock: bool
             print(f"Progress check warning: {e}")
 
     pages_to_process = []
-    for i, img_path in enumerate(image_paths):
-        page_num = i + 1
-        if page_num not in processed_pages:
-            pages_to_process.append((img_path, page_num))
+    for img_path in image_paths_to_process:
+        # Extract page number from filename (e.g. page_417.png -> 417)
+        try:
+            page_num = int(os.path.basename(img_path).split('_')[1].split('.')[0])
+            if page_num not in processed_pages:
+                pages_to_process.append((img_path, page_num))
+        except:
+            continue
 
     if not pages_to_process:
         print("All requested pages are already processed. Skipping VLM initialization.")
@@ -111,8 +119,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Medical Knowledge Graph Ingestion Pipeline")
     parser.add_argument("--pdf", type=str, required=True, help="Path to the source medical PDF")
     parser.add_argument("--out", type=str, default="data/interim/raw_chunks.jsonl", help="Output path for JSONL chunks")
+    parser.add_argument("--start", type=int, default=1, help="Page number to start from")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of pages to process")
     parser.add_argument("--mock", action="store_true", help="Run in mock mode (no VLM)")
     
     args = parser.parse_args()
-    run_ingestion(args.pdf, args.out, args.limit, args.mock)
+    run_ingestion(args.pdf, args.out, start_page=args.start, limit=args.limit, mock=args.mock)
