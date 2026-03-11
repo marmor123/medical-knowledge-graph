@@ -21,7 +21,7 @@ def test_resolver_semantic():
 
 def test_kuzu_schema_load_jsonl():
     """Verify end-to-end load of Entity-Mention-Chunk schema using JSONL."""
-    db_path = "tests/test_db"
+    db_path = "tests/test_db_load"
     if os.path.exists(db_path):
         if os.path.isdir(db_path):
             shutil.rmtree(db_path)
@@ -63,10 +63,22 @@ def test_kuzu_schema_load_jsonl():
 
 def test_validator_logic():
     """Verify MedicalValidator can sample data and generate report."""
-    db_path = "tests/test_db"
-    if not os.path.exists(db_path):
-        pytest.skip("Test database not found. Run test_kuzu_schema_load_jsonl first.")
-        
+    # Use a different path to avoid lock issues with previous test if not fully closed
+    db_path = "tests/test_db_validator"
+    if os.path.exists(db_path):
+        if os.path.isdir(db_path): shutil.rmtree(db_path)
+        else: os.remove(db_path)
+
+    # First populate it
+    loader = KuzuLoader(db_path=db_path)
+    sample_data = [{"source_file": "v.pdf", "page_number": 1, "text_content": "test", "mentions": [{"text": "SOB", "role": "Symptom"}]}]
+    sample_file = "tests/validator_sample.jsonl"
+    with open(sample_file, "w") as f:
+        f.write(json.dumps(sample_data[0]) + "\n")
+    loader.load_chunks(sample_file)
+
+    # Now validate
+    loader.close() # RELEASE LOCK
     validator = MedicalValidator(db_path=db_path)
     samples = validator.fetch_triples(limit=5)
     assert len(samples) > 0

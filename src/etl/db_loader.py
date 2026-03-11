@@ -26,82 +26,99 @@ class KuzuLoader:
             if "already exists" not in str(e).lower():
                 print(f"Schema init warning: {e}")
 
+    def _process_chunk(self, chunk: dict):
+        """Internal helper to process and insert a single chunk and its mentions."""
+        chunk_id = f"{chunk['source_file']}_pg{chunk['page_number']}"
+        
+        # 1. Insert Chunk
+        self.conn.execute(
+            "MERGE (c:Chunk {id: $id, source_file: $src, page_number: $pg, text_content: $txt})",
+            {"id": chunk_id, "src": chunk["source_file"], "pg": chunk["page_number"], "txt": chunk["text_content"]}
+        )
+        
+        # 2. Process Mentions
+        mentions = chunk.get("mentions", [])
+        for m in mentions:
+            text = m["text"]
+            role = m["role"]
+            mention_id = f"{text}_{role}"
+            
+            # Resolve mention to canonical entity
+            # Note: We now pass the text_content as context for better resolution
+            resolved = self.resolver.resolve(text, context=chunk["text_content"])
+            
+            # 3. Insert Entity (The canonical Concept) - Skip if UNKNOWN
+            if resolved["cui"] != "UNKNOWN":
+                self.conn.execute(
+                    "MERGE (e:Entity {cui: $cui, name: $name})",
+                    {"cui": resolved["cui"], "name": resolved["canonical_name"]}
+                )
+            
+            # 4. Insert Mention (The physical occurrence)
+            self.conn.execute(
+                "MERGE (m:Mention {id: $id, text: $txt, role: $role})",
+                {"id": mention_id, "txt": text, "role": role}
+            )
+            
+            # 5. Create Edges
+            if resolved["cui"] != "UNKNOWN":
+                self.conn.execute(
+                    "MATCH (m:Mention), (e:Entity) WHERE m.id = $mid AND e.cui = $cui "
+                    "MERGE (m)-[:REFERS_TO]->(e)",
+                    {"mid": mention_id, "cui": resolved["cui"]}
+                )
+            
+            self.conn.execute(
+                "MATCH (m:Mention), (c:Chunk) WHERE m.id = $mid AND c.id = $cid "
+                "MERGE (m)-[:APPEARS_IN]->(c)",
+                {"mid": mention_id, "cid": chunk_id}
+            )
+
     def load_chunks(self, chunks_file: str):
         """
         Loads extracted JSONL chunks, resolves entities, and inserts into Kùzu.
-        Handles both JSON and JSONL for backward compatibility during transition.
+        Uses streaming (line-by-line) to prevent OOM errors on large files.
         """
-        chunks = []
-        try:
-            with open(chunks_file, "r", encoding="utf-8") as f:
-                content = f.read().strip()
-                if content.startswith("["):
-                    # Old JSON format
-                    chunks = json.loads(content)
-                else:
-                    # New JSONL format
-                    for line in content.split("\n"):
-                        if line.strip():
-                            chunks.append(json.loads(line))
-        except Exception as e:
-            print(f"Error reading chunks file {chunks_file}: {e}")
+        if not os.path.exists(chunks_file):
+            print(f"Error: Chunks file {chunks_file} not found.")
             return
-            
-        print(f"Loading {len(chunks)} chunks into Kùzu...")
+
+        print(f"Loading data from {chunks_file} into Kùzu...")
         
         self.conn.execute("BEGIN TRANSACTION")
         try:
-            for i, chunk in enumerate(chunks):
-                chunk_id = f"{chunk['source_file']}_pg{chunk['page_number']}"
+            with open(chunks_file, "r", encoding="utf-8") as f:
+                # Detect format by checking the first character
+                first_char = f.read(1)
+                f.seek(0) # Reset to start
                 
-                # 1. Insert Chunk
-                self.conn.execute(
-                    "MERGE (c:Chunk {id: $id, source_file: $src, page_number: $pg, text_content: $txt})",
-                    {"id": chunk_id, "src": chunk["source_file"], "pg": chunk["page_number"], "txt": chunk["text_content"]}
-                )
-                
-                # 2. Process Mentions
-                mentions = chunk.get("mentions", [])
-                for m in mentions:
-                    text = m["text"]
-                    role = m["role"]
-                    mention_id = f"{text}_{role}"
-                    
-                    # Resolve mention to canonical entity
-                    resolved = self.resolver.resolve(text)
-                    
-                    # 3. Insert Entity (The canonical Concept) - Skip if UNKNOWN
-                    if resolved["cui"] != "UNKNOWN":
-                        self.conn.execute(
-                            "MERGE (e:Entity {cui: $cui, name: $name})",
-                            {"cui": resolved["cui"], "name": resolved["canonical_name"]}
-                        )
-                    
-                    # 4. Insert Mention (The physical occurrence)
-                    self.conn.execute(
-                        "MERGE (m:Mention {id: $id, text: $txt, role: $role})",
-                        {"id": mention_id, "txt": text, "role": role}
-                    )
-                    
-                    # 5. Create Edges
-                    if resolved["cui"] != "UNKNOWN":
-                        self.conn.execute(
-                            "MATCH (m:Mention), (e:Entity) WHERE m.id = $mid AND e.cui = $cui "
-                            "MERGE (m)-[:REFERS_TO]->(e)",
-                            {"mid": mention_id, "cui": resolved["cui"]}
-                        )
-                    
-                    self.conn.execute(
-                        "MATCH (m:Mention), (c:Chunk) WHERE m.id = $mid AND c.id = $cid "
-                        "MERGE (m)-[:APPEARS_IN]->(c)",
-                        {"mid": mention_id, "cid": chunk_id}
-                    )
+                if first_char == '[':
+                    # Legacy full JSON format - Still loads all into memory
+                    # (Kept for backward compatibility but discouraged for large files)
+                    chunks = json.load(f)
+                    for chunk in chunks:
+                        self._process_chunk(chunk)
+                else:
+                    # Memory-efficient JSONL streaming
+                    for line in f:
+                        if line.strip():
+                            chunk = json.loads(line)
+                            self._process_chunk(chunk)
+                            
             self.conn.execute("COMMIT")
             print("Data load complete.")
         except Exception as e:
             self.conn.execute("ROLLBACK")
             print(f"Error during batch load, transaction rolled back: {e}")
             raise e
+
+    def close(self):
+        """Closes the Kùzu database connection and releases locks."""
+        # Note: kuzu-python currently doesn't have an explicit close() 
+        # but deleting the objects helps release the lock in some environments.
+        del self.conn
+        del self.db
+        print("Kùzu database connection closed.")
 
 if __name__ == "__main__":
     import argparse

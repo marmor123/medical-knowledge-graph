@@ -28,7 +28,7 @@ def log_error(error_msg: str):
 def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: int = None, mock: bool = False, mode: str = "standard", parser: Optional[VLMParser] = None):
     """
     Main entry point for the medical PDF ingestion pipeline.
-    Allows targeting specific page ranges and processing modes.
+    Optimized: Only rasterizes the requested page range.
     """
     print(f"Starting ingestion for {pdf_path} (Mode: {mode}) from page {start_page}...")
     
@@ -36,18 +36,13 @@ def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: i
     image_folder = "data/interim/images"
     os.makedirs(image_folder, exist_ok=True)
     
-    # Phase 1: Rasterize PDF to images
-    image_paths = rasterize_pdf(pdf_path, image_folder, mock=mock)
-    if not image_paths:
-        print("Failed to rasterize PDF. Aborting.")
+    # Phase 1: Rasterize PDF to images (ONLY the requested range)
+    image_paths_to_process = rasterize_pdf(pdf_path, image_folder, start_page=start_page, limit=limit, mock=mock)
+    if not image_paths_to_process:
+        print("Failed to rasterize requested PDF pages. Aborting.")
         return
         
-    # Apply start and limit constraints
-    start_index = max(0, start_page - 1)
-    end_index = start_index + limit if limit else len(image_paths)
-    image_paths_to_process = image_paths[start_index : end_index]
-    
-    print(f"Targeting {len(image_paths_to_process)} pages.")
+    print(f"Targeting {len(image_paths_to_process)} pages for VLM analysis.")
     
     # Phase 2: VLM Parsing
     processed_pages = set()
@@ -61,7 +56,7 @@ def run_ingestion(pdf_path: str, output_file: str, start_page: int = 1, limit: i
                     if line.strip():
                         chunk = json.loads(line)
                         processed_pages.add(chunk["page_number"])
-            print(f"Detected {len(processed_pages)} already processed pages.")
+            print(f"Detected {len(processed_pages)} already processed pages in {output_file}.")
         except Exception as e:
             print(f"Progress check warning: {e}")
 

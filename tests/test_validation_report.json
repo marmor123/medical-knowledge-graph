@@ -1,7 +1,7 @@
 {
     "metadata": {
-        "db_path": "tests/test_db",
-        "total_samples": 2,
+        "db_path": "tests/test_db_validator",
+        "total_samples": 1,
         "accuracy": "100.00%"
     },
     "detailed_results": [
@@ -9,16 +9,7 @@
             "mention": "SOB",
             "resolved_entity": "SOB",
             "role": "Symptom",
-            "sentence_context": "Patient presents with SOB and history of Diabetes.",
-            "is_correct": true,
-            "reason": "Automatic pass (Mock Mode)",
-            "suggested_correction": null
-        },
-        {
-            "mention": "Diabetes",
-            "resolved_entity": "Diabetes Mellitus",
-            "role": "Diagnosis",
-            "sentence_context": "Patient presents with SOB and history of Diabetes.",
+            "sentence_context": "test",
             "is_correct": true,
             "reason": "Automatic pass (Mock Mode)",
             "suggested_correction": null

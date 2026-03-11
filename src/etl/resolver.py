@@ -44,11 +44,17 @@ class MedicalResolver:
         # Expanded MVP Concept DB
         self.concept_db = {
             "Diabetes Mellitus": "C0011849",
+            "Diabetes": "C0011849",
             "Shortness of breath": "C0013404",
+            "SOB": "C0013404",
+            "Dyspnea": "C0013404",
             "Myocardial Infarction": "C0027051",
+            "Heart Attack": "C0027051",
             "Smoking": "C0037369",
             "Hypertension": "C0020538",
+            "High Blood Pressure": "C0020538",
             "Fever": "C0015967",
+            "LDH High": "C0202054",
             "Abdominal Aortic Aneurysm": "C0000768",
             "Beta-blocker": "C0001645",
             "Mental Status Change": "C0233407",
@@ -93,8 +99,7 @@ class MedicalResolver:
         # 1. Expand abbreviation
         if mention_text in self.abbreviations:
             expansion = self.abbreviations[mention_text]
-            # Handle multi-mappings (e.g. "AI": "adrenal insufficiency aortic insufficiency")
-            # We assume spaces or semicolons separate expansions in the dictionary
+            # Handle multi-mappings
             candidates.extend(expansion.split(' ')) 
 
         best_overall_match = None
@@ -102,6 +107,7 @@ class MedicalResolver:
         resolution_method = "semantic"
 
         for cand in candidates:
+            if not cand.strip(): continue
             cand_norm = self._normalize_text(cand)
             emb = self._get_embedding(cand_norm)
             emb = emb / emb.norm(dim=-1, keepdim=True)
