@@ -7,4 +7,3 @@ torchvision
 pillow
 accelerate
 json-repair
-bitsandbytes

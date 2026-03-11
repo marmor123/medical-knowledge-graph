@@ -40,29 +40,13 @@ class VLMParser:
         """
         print(f"Initializing VLM: {model_name}")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
-        # Optimization: Use bfloat16 if on GPU, else float32
         self.torch_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
         
         print(f"Loading model on {self.device} with {self.torch_dtype}...")
-        
-        # Colab-specific optimizations: 4-bit quantization if GPU is available
-        load_kwargs = {
-            "torch_dtype": self.torch_dtype,
-            "device_map": "auto",
-        }
-        
-        if torch.cuda.is_available():
-            print("🚀 GPU detected! Enabling 4-bit quantization and Flash Attention...")
-            load_kwargs["load_in_4bit"] = True
-            load_kwargs["attn_implementation"] = "flash_attention_2"
-        else:
-            print("⚠️ WARNING: No GPU detected. Running on CPU will be EXTREMELY slow.")
-
-        # Load the model and processor
         self.model = Qwen2VLForConditionalGeneration.from_pretrained(
             model_name, 
-            **load_kwargs
+            torch_dtype=self.torch_dtype, 
+            device_map="auto"
         )
         self.processor = AutoProcessor.from_pretrained(model_name)
         print("Model loaded.")
