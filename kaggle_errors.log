@@ -938,3 +938,283 @@ Traceback (most recent call last):
 AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
 
 
+--- ERROR: 2026-03-11 11:07:39 ---
+CRITICAL failure on page 417: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:39 ---
+CRITICAL failure on page 418: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:40 ---
+CRITICAL failure on page 419: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:40 ---
+CRITICAL failure on page 420: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:40 ---
+CRITICAL failure on page 421: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:40 ---
+CRITICAL failure on page 422: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:41 ---
+CRITICAL failure on page 423: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:41 ---
+CRITICAL failure on page 424: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:41 ---
+CRITICAL failure on page 425: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:41 ---
+CRITICAL failure on page 426: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:42 ---
+CRITICAL failure on page 427: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:42 ---
+CRITICAL failure on page 428: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:42 ---
+CRITICAL failure on page 429: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:42 ---
+CRITICAL failure on page 430: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:43 ---
+CRITICAL failure on page 431: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:43 ---
+CRITICAL failure on page 432: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:43 ---
+CRITICAL failure on page 433: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:43 ---
+CRITICAL failure on page 434: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:44 ---
+CRITICAL failure on page 435: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
+--- ERROR: 2026-03-11 11:07:44 ---
+CRITICAL failure on page 436: 'Qwen3VLModel' object has no attribute 'generate'
+Traceback (most recent call last):
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/processor.py", line 98, in run_ingestion
+    page_data = parser.parse_page(img_path, page_num, source_filename, mode=mode)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/medical-knowledge-graph/src/etl/vlm_parser.py", line 160, in parse_page
+    generated_ids = self.model.generate(**inputs, max_new_tokens=4096, do_sample=False)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'Qwen3VLModel' object has no attribute 'generate'
+
+
